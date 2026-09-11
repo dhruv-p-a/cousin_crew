@@ -508,85 +508,122 @@ class _HeroSectionState extends State<_HeroSection> with SingleTickerProviderSta
     return Container(
       height: widget.isDesktop ? 800 : 600,
       width: double.infinity,
-      child: Stack(
-        children: [
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) => Transform.scale(
-              scale: 1.0 + (0.1 * _controller.value),
-              child: Image.network(
-                'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1950&q=80',
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [widget.primaryColor.withAlpha(240), widget.primaryColor.withAlpha(100), Colors.transparent],
+      padding: EdgeInsets.symmetric(
+        horizontal: widget.isDesktop ? 60 : 20,
+        vertical: 20,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(40), // Rounded corners like the image
+        child: Stack(
+          children: [
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) => Transform.scale(
+                scale: 1.0 + (0.1 * _controller.value),
+                child: Image.network(
+                  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1950&q=80',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: widget.isDesktop ? 100 : 30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _AnimatedEntrance(
-                  child: Text(
-                    'EXCEPTIONAL EVENT SPECIALISTS',
-                    style: TextStyle(color: widget.secondaryColor, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 8),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.white.withAlpha(220),
+                      Colors.white.withAlpha(100),
+                      Colors.transparent,
+                    ],
                   ),
                 ),
-                const SizedBox(height: 30),
-                _AnimatedEntrance(
-                  delay: 200,
-                  child: Text(
-                    'Crafting\nTimeless\nCelebrations',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: widget.isDesktop ? 110 : 56,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      height: 1.0,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 40),
-                _AnimatedEntrance(
-                  delay: 400,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 650),
-                    child: Text(
-                      'We specialize in transforming your grandest visions into legendary realities. Based in Gujarat, serving dreams worldwide with unmatched elegance.',
-                      style: GoogleFonts.montserrat(fontSize: 18, color: Colors.white.withAlpha(200), height: 1.8),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 60),
-                _AnimatedEntrance(
-                  delay: 600,
-                  child: ElevatedButton(
-                    onPressed: widget.onExplore,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.secondaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 30),
-                      shape: const RoundedRectangleBorder(),
-                    ),
-                    child: const Text('EXPLORE PACKAGES', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 3)),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: widget.isDesktop ? 80 : 30),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _AnimatedEntrance(
+                    child: RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Events That\n',
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: widget.isDesktop ? 90 : 50,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF4A3728), // Dark brown
+                              height: 1.1,
+                            ),
+                          ),
+                          TextSpan(
+                            text: 'Define You',
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: widget.isDesktop ? 95 : 55,
+                              fontWeight: FontWeight.w500,
+                              fontStyle: FontStyle.italic,
+                              color: const Color(0xFF8B4513), // Stylish italic color
+                              height: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  _AnimatedEntrance(
+                    delay: 400,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 500),
+                      child: Text(
+                        'Premium Wedding Planning, Custom Decor & Luxury Management tailored beautifully for your story.',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 18,
+                          color: Colors.black87,
+                          height: 1.6,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 60),
+                  _AnimatedEntrance(
+                    delay: 600,
+                    child: Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: widget.onExplore,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4A3728),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 25),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                          ),
+                          child: const Text('Book Event', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 20),
+                        OutlinedButton(
+                          onPressed: () {},
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 25),
+                            side: const BorderSide(color: Color(0xFF4A3728)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                          ),
+                          child: const Text('View Gallery', style: TextStyle(color: Color(0xFF4A3728), fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
