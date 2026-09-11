@@ -57,17 +57,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     
-    // Fast Welcome Sequence
     Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted) {
-        setState(() => _contentVisible = true);
-      }
+      if (mounted) setState(() => _contentVisible = true);
     });
 
-    Future.delayed(const Duration(milliseconds: 1800), () {
-      if (mounted) {
-        setState(() => _showWelcome = false);
-      }
+    Future.delayed(const Duration(milliseconds: 2200), () {
+      if (mounted) setState(() => _showWelcome = false);
     });
   }
 
@@ -82,7 +77,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void _scrollToSection(double offset) {
     _scrollController.animateTo(
       offset,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1200),
       curve: Curves.easeInOutQuart,
     );
   }
@@ -98,15 +93,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: surfaceColor,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _launchWhatsApp,
-        backgroundColor: const Color(0xFF25D366),
-        icon: const Icon(Icons.chat, color: Colors.white),
-        label: const Text('Direct Enquire', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-      ),
+      floatingActionButton: _FloatingWhatsApp(onPressed: _launchWhatsApp),
       body: Stack(
         children: [
-          // Main Website Content
           CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -130,29 +119,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           letterSpacing: 2,
                         ),
                       ),
-                      Container(height: 3, width: 45, color: secondaryColor),
+                      _AnimatedLine(color: secondaryColor),
                     ],
                   ),
                 ),
                 actions: isDesktop ? [
                   _navButton('HOME', 0),
-                  _navButton('SERVICES', 800),
-                  _navButton('PORTFOLIO', 2400),
-                  _navButton('REVIEWS', 3800),
-                  _navButton('CONTACT', 4600),
+                  _navButton('SERVICES', 900),
+                  _navButton('PORTFOLIO', 2600),
+                  _navButton('REVIEWS', 4200),
+                  _navButton('CONTACT', 5000),
                   const SizedBox(width: 30),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-                    child: ElevatedButton(
-                      onPressed: () => _scrollToSection(4600),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: const RoundedRectangleBorder(),
-                        padding: const EdgeInsets.symmetric(horizontal: 25),
-                      ),
-                      child: const Text('BOOK AN EVENT', style: TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold)),
-                    ),
+                  _PulseButton(
+                    onPressed: () => _scrollToSection(5000),
+                    child: const Text('BOOK AN EVENT', style: TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold)),
                   ),
                 ] : null,
               ),
@@ -169,51 +149,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ],
           ),
 
-          // Smooth Welcome Screen
-          if (_showWelcome)
-            TweenAnimationBuilder<double>(
-              duration: const Duration(milliseconds: 800),
-              tween: Tween(begin: 1.0, end: _contentVisible ? 1.0 : 1.0),
-              builder: (context, value, child) {
-                return AnimatedOpacity(
-                  duration: const Duration(milliseconds: 600),
-                  opacity: _showWelcome ? 1.0 : 0.0,
-                  child: Container(
-                    color: primaryColor,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _AnimatedText(
-                            text: 'WELCOME TO',
-                            style: GoogleFonts.montserrat(
-                              color: secondaryColor,
-                              letterSpacing: 15,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w300,
-                            ),
-                            delay: 200,
-                          ),
-                          const SizedBox(height: 30),
-                          _AnimatedText(
-                            text: 'COUSIN CREWS',
-                            style: GoogleFonts.playfairDisplay(
-                              color: Colors.white,
-                              fontSize: isDesktop ? 70 : 40,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 5,
-                            ),
-                            delay: 500,
-                          ),
-                          const SizedBox(height: 40),
-                          Container(height: 1, width: 100, color: secondaryColor),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+          if (_showWelcome) _WelcomeScreen(isDesktop: isDesktop),
         ],
       ),
     );
@@ -233,72 +169,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeroSection(bool isDesktop) {
-    return Container(
-      height: isDesktop ? 800 : 600,
-      width: double.infinity,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.network(
-              'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1950&q=80',
-              fit: BoxFit.cover,
-            ),
-          ),
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [primaryColor.withAlpha(240), primaryColor.withAlpha(100), Colors.transparent],
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: isDesktop ? 100 : 30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'EXCEPTIONAL EVENT SPECIALISTS',
-                  style: TextStyle(color: secondaryColor, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 8),
-                ),
-                const SizedBox(height: 30),
-                Text(
-                  'Crafting\nTimeless\nCelebrations',
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: isDesktop ? 110 : 56,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.0,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 650),
-                  child: Text(
-                    'We specialize in transforming your grandest visions into legendary realities. Based in Gujarat, serving dreams worldwide with unmatched elegance.',
-                    style: GoogleFonts.montserrat(fontSize: 18, color: Colors.white.withAlpha(200), height: 1.8),
-                  ),
-                ),
-                const SizedBox(height: 60),
-                ElevatedButton(
-                  onPressed: () => _scrollToSection(4600),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: secondaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 30),
-                    shape: const RoundedRectangleBorder(),
-                  ),
-                  child: const Text('EXPLORE PACKAGES', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 3)),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return _HeroSection(
+      isDesktop: isDesktop,
+      primaryColor: primaryColor,
+      secondaryColor: secondaryColor,
+      onExplore: () => _scrollToSection(900),
     );
   }
 
@@ -309,21 +184,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _statItem('500+', 'EVENTS'),
-          _statItem('150+', 'WEDDINGS'),
-          _statItem('15+', 'YEARS EXP'),
+          _StatItem(value: 500, label: 'EVENTS', suffix: '+'),
+          _StatItem(value: 150, label: 'WEDDINGS', suffix: '+'),
+          _StatItem(value: 15, label: 'YEARS EXP', suffix: '+'),
         ],
       ),
-    );
-  }
-
-  Widget _statItem(String value, String label) {
-    return Column(
-      children: [
-        Text(value, style: GoogleFonts.playfairDisplay(fontSize: 56, fontWeight: FontWeight.bold, color: primaryColor)),
-        const SizedBox(height: 10),
-        Text(label, style: GoogleFonts.montserrat(fontSize: 14, color: Colors.grey[500], letterSpacing: 4, fontWeight: FontWeight.bold)),
-      ],
     );
   }
 
@@ -333,94 +198,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       color: surfaceColor,
       child: Column(
         children: [
-          Text('Signature Collections', style: GoogleFonts.playfairDisplay(fontSize: 48, fontWeight: FontWeight.bold, color: primaryColor)),
-          const SizedBox(height: 20),
-          Container(height: 4, width: 80, color: secondaryColor),
+          _AnimatedEntrance(
+            child: Column(
+              children: [
+                Text('Signature Collections', style: GoogleFonts.playfairDisplay(fontSize: 48, fontWeight: FontWeight.bold, color: primaryColor)),
+                const SizedBox(height: 20),
+                Container(height: 4, width: 80, color: secondaryColor),
+              ],
+            ),
+          ),
           const SizedBox(height: 100),
-          _detailedProjectRow(
-            isDesktop,
-            true,
-            'Full Event Planning',
-            'Luxury, start-to-finish planning where every detail is managed for you. We create a comprehensive plan including venues, stylists, cinematic teams, and more. On your wedding day, we oversee all behind-the-scenes details.',
-            'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+          _DetailedProjectRow(
+            isDesktop: isDesktop,
+            imgLeft: true,
+            title: 'Full Event Planning',
+            desc: 'Luxury, start-to-finish planning where every detail is managed for you. We create a comprehensive plan including venues, stylists, cinematic teams, and more.',
+            url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
           ),
-          _detailedProjectRow(
-            isDesktop,
-            false,
-            'Partial Event Planning',
-            'Expert guidance with hands-on involvement. We begin with a detailed session guiding you through venue choices and vendor options. We handle schedules and timelines so you can enjoy the planning process.',
-            'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80',
+          _DetailedProjectRow(
+            isDesktop: isDesktop,
+            imgLeft: false,
+            title: 'Partial Event Planning',
+            desc: 'Expert guidance with hands-on involvement. We handle schedules and timelines while you enjoy the planning process with our expert support.',
+            url: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80',
           ),
-          _detailedProjectRow(
-            isDesktop,
-            true,
-            'Event Management',
-            'Ensure your wedding day runs smoothly with expert coordination. From initial consultation to understanding your needs, we create a detailed timeline and manage all vendors on-site seamlessly.',
-            'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80',
+          _DetailedProjectRow(
+            isDesktop: isDesktop,
+            imgLeft: true,
+            title: 'Event Management',
+            desc: 'Ensure your wedding day runs smoothly with expert coordination. We manage all vendors on-site seamlessly and handle the logistics.',
+            url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80',
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _detailedProjectRow(bool isDesktop, bool imgLeft, String title, String desc, String url) {
-    final text = Expanded(
-      flex: 3,
-      child: Padding(
-        padding: EdgeInsets.all(isDesktop ? 60 : 30),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(title, style: GoogleFonts.playfairDisplay(fontSize: 42, fontWeight: FontWeight.bold, color: primaryColor)),
-            const SizedBox(height: 30),
-            Text(desc, style: GoogleFonts.montserrat(fontSize: 18, color: Colors.grey[700], height: 1.8)),
-            const SizedBox(height: 50),
-            _hoverButton('VIEW DETAILS'),
-          ],
-        ),
-      ),
-    );
-
-    final img = Expanded(
-      flex: 4,
-      child: AspectRatio(
-        aspectRatio: 4/3,
-        child: Container(
-          decoration: BoxDecoration(
-            boxShadow: [BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 40, offset: const Offset(0, 20))],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: Image.network(url, fit: BoxFit.cover),
-          ),
-        ),
-      ),
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 150),
-      child: isDesktop
-          ? Row(children: imgLeft ? [img, text] : [text, img])
-          : Column(children: [img, text]),
-    );
-  }
-
-  Widget _hoverButton(String text) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: secondaryColor, width: 1.5),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {},
-          hoverColor: secondaryColor.withAlpha(20),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 22),
-            child: Text(text, style: TextStyle(color: primaryColor, letterSpacing: 3, fontWeight: FontWeight.w800, fontSize: 13)),
-          ),
-        ),
       ),
     );
   }
@@ -438,10 +247,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       child: Column(
         children: [
-          Text(
-            'Begin Your Story With Us',
-            style: GoogleFonts.playfairDisplay(fontSize: isDesktop ? 72 : 44, fontWeight: FontWeight.bold, color: Colors.white),
-            textAlign: TextAlign.center,
+          _AnimatedEntrance(
+            child: Text(
+              'Begin Your Story With Us',
+              style: GoogleFonts.playfairDisplay(fontSize: isDesktop ? 72 : 44, fontWeight: FontWeight.bold, color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
           ),
           const SizedBox(height: 100),
           ConstrainedBox(
@@ -553,40 +364,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       color: Colors.white,
       child: Column(
         children: [
-          Text('Client Experiences', style: GoogleFonts.playfairDisplay(fontSize: 52, fontWeight: FontWeight.bold, color: primaryColor)),
+          _AnimatedEntrance(
+            child: Text('Client Experiences', style: GoogleFonts.playfairDisplay(fontSize: 52, fontWeight: FontWeight.bold, color: primaryColor)),
+          ),
           const SizedBox(height: 100),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _reviewCard('Hardik P.', 'Cousin Crews handled our corporate gala perfectly. Very professional.'),
-                _reviewCard('Meera S.', 'The dream wedding I always wanted! The team are magicians.'),
-                _reviewCard('Karan J.', 'Attention to detail is unmatched. Highly recommend for any luxury event.'),
+                _ReviewCard(name: 'Hardik P.', text: 'Cousin Crews handled our corporate gala perfectly. Very professional.'),
+                _ReviewCard(name: 'Meera S.', text: 'The dream wedding I always wanted! The team are magicians.'),
+                _ReviewCard(name: 'Karan J.', text: 'Attention to detail is unmatched. Highly recommend for any luxury event.'),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _reviewCard(String name, String text) {
-    return Container(
-      width: 450,
-      margin: const EdgeInsets.symmetric(horizontal: 40),
-      padding: const EdgeInsets.all(60),
-      decoration: BoxDecoration(
-        color: surfaceColor, 
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 40, offset: const Offset(0, 10))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: List.generate(5, (i) => Icon(Icons.star, color: secondaryColor, size: 22))),
-          const SizedBox(height: 35),
-          Text(text, style: GoogleFonts.montserrat(fontSize: 18, height: 2.2, fontStyle: FontStyle.italic, color: Colors.black87)),
-          const SizedBox(height: 50),
-          Text('- $name', style: GoogleFonts.montserrat(fontWeight: FontWeight.w900, color: primaryColor, letterSpacing: 2, fontSize: 14)),
         ],
       ),
     );
@@ -601,9 +392,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _socialIcon(Icons.facebook),
-              _socialIcon(Icons.camera_alt_outlined),
-              _socialIcon(Icons.share_outlined),
+              _SocialIcon(icon: Icons.facebook),
+              _SocialIcon(icon: Icons.camera_alt_outlined),
+              _SocialIcon(icon: Icons.share_outlined),
             ],
           ),
           const SizedBox(height: 80),
@@ -615,9 +406,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               Text('© 2026 COUSIN CREWS.', style: GoogleFonts.montserrat(color: Colors.white38, fontSize: 12, letterSpacing: 4, fontWeight: FontWeight.w500)),
               Row(
                 children: [
-                  _footerLink('PRIVACY POLICY'),
+                  _FooterLink(text: 'PRIVACY POLICY'),
                   const SizedBox(width: 50),
-                  _footerLink('TERMS OF SERVICE'),
+                  _FooterLink(text: 'TERMS OF SERVICE'),
                 ],
               ),
             ],
@@ -626,12 +417,351 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
   }
+}
 
-  Widget _footerLink(String text) {
-    return Text(text, style: GoogleFonts.montserrat(color: Colors.white24, fontSize: 12, letterSpacing: 3));
+// Helper Widgets for Better Animations
+
+class _AnimatedLine extends StatefulWidget {
+  final Color color;
+  const _AnimatedLine({required this.color});
+  @override
+  State<_AnimatedLine> createState() => _AnimatedLineState();
+}
+
+class _AnimatedLineState extends State<_AnimatedLine> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+  }
+  @override
+  void dispose() { _controller.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) => Container(height: 3, width: 30 + (20 * _controller.value), color: widget.color),
+    );
+  }
+}
+
+class _PulseButton extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onPressed;
+  const _PulseButton({required this.child, required this.onPressed});
+  @override
+  State<_PulseButton> createState() => _PulseButtonState();
+}
+
+class _PulseButtonState extends State<_PulseButton> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat(reverse: true);
+  }
+  @override
+  void dispose() { _controller.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      child: ScaleTransition(
+        scale: Tween<double>(begin: 1.0, end: 1.05).animate(_controller),
+        child: ElevatedButton(
+          onPressed: widget.onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF0A192F),
+            foregroundColor: Colors.white,
+            shape: const RoundedRectangleBorder(),
+            padding: const EdgeInsets.symmetric(horizontal: 25),
+          ),
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroSection extends StatefulWidget {
+  final bool isDesktop;
+  final Color primaryColor;
+  final Color secondaryColor;
+  final VoidCallback onExplore;
+  const _HeroSection({required this.isDesktop, required this.primaryColor, required this.secondaryColor, required this.onExplore});
+  @override
+  State<_HeroSection> createState() => _HeroSectionState();
+}
+
+class _HeroSectionState extends State<_HeroSection> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 10))..forward();
+  }
+  @override
+  void dispose() { _controller.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: widget.isDesktop ? 800 : 600,
+      width: double.infinity,
+      child: Stack(
+        children: [
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) => Transform.scale(
+              scale: 1.0 + (0.1 * _controller.value),
+              child: Image.network(
+                'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1950&q=80',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [widget.primaryColor.withAlpha(240), widget.primaryColor.withAlpha(100), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: widget.isDesktop ? 100 : 30),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _AnimatedEntrance(
+                  child: Text(
+                    'EXCEPTIONAL EVENT SPECIALISTS',
+                    style: TextStyle(color: widget.secondaryColor, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 8),
+                  ),
+                ),
+                const SizedBox(height: 30),
+                _AnimatedEntrance(
+                  delay: 200,
+                  child: Text(
+                    'Crafting\nTimeless\nCelebrations',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: widget.isDesktop ? 110 : 56,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.0,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                _AnimatedEntrance(
+                  delay: 400,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 650),
+                    child: Text(
+                      'We specialize in transforming your grandest visions into legendary realities. Based in Gujarat, serving dreams worldwide with unmatched elegance.',
+                      style: GoogleFonts.montserrat(fontSize: 18, color: Colors.white.withAlpha(200), height: 1.8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 60),
+                _AnimatedEntrance(
+                  delay: 600,
+                  child: ElevatedButton(
+                    onPressed: widget.onExplore,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: widget.secondaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 30),
+                      shape: const RoundedRectangleBorder(),
+                    ),
+                    child: const Text('EXPLORE PACKAGES', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 3)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatefulWidget {
+  final int value;
+  final String label;
+  final String suffix;
+  const _StatItem({required this.value, required this.label, required this.suffix});
+  @override
+  State<_StatItem> createState() => _StatItemState();
+}
+
+class _StatItemState extends State<_StatItem> with SingleTickerProviderStateMixin {
+  late Animation<int> _animation;
+  late AnimationController _controller;
+  bool _started = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _animation = IntTween(begin: 0, end: widget.value).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutQuart));
   }
 
-  Widget _socialIcon(IconData icon) {
+  @override
+  Widget build(BuildContext context) {
+    return _AnimatedEntrance(
+      onVisible: () { if (!_started) { _controller.forward(); _started = true; } },
+      child: Column(
+        children: [
+          AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) => Text('${_animation.value}${widget.suffix}', style: GoogleFonts.playfairDisplay(fontSize: 56, fontWeight: FontWeight.bold, color: const Color(0xFF0A192F))),
+          ),
+          const SizedBox(height: 10),
+          Text(widget.label, style: GoogleFonts.montserrat(fontSize: 14, color: Colors.grey[500], letterSpacing: 4, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailedProjectRow extends StatelessWidget {
+  final bool isDesktop;
+  final bool imgLeft;
+  final String title;
+  final String desc;
+  final String url;
+  const _DetailedProjectRow({required this.isDesktop, required this.imgLeft, required this.title, required this.desc, required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Expanded(
+      flex: 3,
+      child: Padding(
+        padding: EdgeInsets.all(isDesktop ? 60 : 30),
+        child: _AnimatedEntrance(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(title, style: GoogleFonts.playfairDisplay(fontSize: 42, fontWeight: FontWeight.bold, color: const Color(0xFF0A192F))),
+              const SizedBox(height: 30),
+              Text(desc, style: GoogleFonts.montserrat(fontSize: 18, color: Colors.grey[700], height: 1.8)),
+              const SizedBox(height: 50),
+              _HoverButton(text: 'VIEW DETAILS'),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final img = Expanded(
+      flex: 4,
+      child: _AnimatedEntrance(
+        delay: 200,
+        child: AspectRatio(
+          aspectRatio: 4/3,
+          child: Container(
+            decoration: BoxDecoration(
+              boxShadow: [BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 40, offset: const Offset(0, 20))],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Image.network(url, fit: BoxFit.cover),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 150),
+      child: isDesktop
+          ? Row(children: imgLeft ? [img, text] : [text, img])
+          : Column(children: [img, text]),
+    );
+  }
+}
+
+class _HoverButton extends StatefulWidget {
+  final String text;
+  const _HoverButton({required this.text});
+  @override
+  State<_HoverButton> createState() => _HoverButtonState();
+}
+
+class _HoverButtonState extends State<_HoverButton> {
+  bool _hover = false;
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFC5A059), width: 1.5),
+          color: _hover ? const Color(0xFFC5A059) : Colors.transparent,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 22),
+          child: Text(widget.text, style: TextStyle(color: _hover ? Colors.white : const Color(0xFF0A192F), letterSpacing: 3, fontWeight: FontWeight.w800, fontSize: 13)),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReviewCard extends StatelessWidget {
+  final String name;
+  final String text;
+  const _ReviewCard({required this.name, required this.text});
+  @override
+  Widget build(BuildContext context) {
+    return _AnimatedEntrance(
+      child: Container(
+        width: 450,
+        margin: const EdgeInsets.symmetric(horizontal: 40),
+        padding: const EdgeInsets.all(60),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8F9FA), 
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 40, offset: const Offset(0, 10))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: List.generate(5, (i) => const Icon(Icons.star, color: Color(0xFFC5A059), size: 22))),
+            const SizedBox(height: 35),
+            Text(text, style: GoogleFonts.montserrat(fontSize: 18, height: 2.2, fontStyle: FontStyle.italic, color: Colors.black87)),
+            const SizedBox(height: 50),
+            Text('- $name', style: GoogleFonts.montserrat(fontWeight: FontWeight.w900, color: const Color(0xFF0A192F), letterSpacing: 2, fontSize: 14)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FooterLink extends StatelessWidget {
+  final String text;
+  const _FooterLink({required this.text});
+  @override
+  Widget build(BuildContext context) {
+    return Text(text, style: GoogleFonts.montserrat(color: Colors.white24, fontSize: 12, letterSpacing: 3));
+  }
+}
+
+class _SocialIcon extends StatelessWidget {
+  final IconData icon;
+  const _SocialIcon({required this.icon});
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Icon(icon, color: Colors.white60, size: 32),
@@ -639,66 +769,148 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-class _AnimatedText extends StatefulWidget {
+class _AnimatedEntrance extends StatefulWidget {
+  final Widget child;
+  final int delay;
+  final VoidCallback? onVisible;
+  const _AnimatedEntrance({required this.child, this.delay = 0, this.onVisible});
+  @override
+  State<_AnimatedEntrance> createState() => _AnimatedEntranceState();
+}
+
+class _AnimatedEntranceState extends State<_AnimatedEntrance> {
+  bool _isVisible = false;
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && !_isVisible) {
+            final RenderBox box = context.findRenderObject() as RenderBox;
+            final offset = box.localToGlobal(Offset.zero);
+            if (offset.dy < MediaQuery.of(context).size.height * 0.9) {
+              Future.delayed(Duration(milliseconds: widget.delay), () {
+                if (mounted) {
+                  setState(() => _isVisible = true);
+                  widget.onVisible?.call();
+                }
+              });
+            }
+          }
+        });
+        return AnimatedOpacity(
+          opacity: _isVisible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 1000),
+          curve: Curves.easeOut,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 1000),
+            curve: Curves.easeOut,
+            transform: Matrix4.translationValues(0, _isVisible ? 0 : 30, 0),
+            child: widget.child,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _WelcomeScreen extends StatelessWidget {
+  final bool isDesktop;
+  const _WelcomeScreen({required this.isDesktop});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF0A192F),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _AnimatedWelcomeText(
+              text: 'WELCOME TO',
+              style: GoogleFonts.montserrat(color: const Color(0xFFC5A059), letterSpacing: 15, fontSize: 16, fontWeight: FontWeight.w300),
+              delay: 200,
+            ),
+            const SizedBox(height: 30),
+            _AnimatedWelcomeText(
+              text: 'COUSIN CREWS',
+              style: GoogleFonts.playfairDisplay(color: Colors.white, fontSize: isDesktop ? 70 : 40, fontWeight: FontWeight.w900, letterSpacing: 5),
+              delay: 600,
+            ),
+            const SizedBox(height: 40),
+            _AnimatedLine(color: const Color(0xFFC5A059)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedWelcomeText extends StatefulWidget {
   final String text;
   final TextStyle style;
   final int delay;
-
-  const _AnimatedText({required this.text, required this.style, required this.delay});
-
+  const _AnimatedWelcomeText({required this.text, required this.style, required this.delay});
   @override
-  State<_AnimatedText> createState() => _AnimatedTextState();
+  State<_AnimatedWelcomeText> createState() => _AnimatedWelcomeTextState();
 }
 
-class _AnimatedTextState extends State<_AnimatedText> with SingleTickerProviderStateMixin {
+class _AnimatedWelcomeTextState extends State<_AnimatedWelcomeText> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _opacity;
-
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
-    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-    
-    Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) _controller.forward();
-    });
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+    Future.delayed(Duration(milliseconds: widget.delay), () { if (mounted) _controller.forward(); });
   }
-
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
+  void dispose() { _controller.dispose(); super.dispose(); }
   @override
   Widget build(BuildContext context) {
     return FadeTransition(opacity: _opacity, child: Text(widget.text, style: widget.style));
   }
 }
 
-class _AnimatedSection extends StatelessWidget {
-  final Widget child;
-  const _AnimatedSection({required this.child});
+class _FloatingWhatsApp extends StatefulWidget {
+  final VoidCallback onPressed;
+  const _FloatingWhatsApp({required this.onPressed});
+  @override
+  State<_FloatingWhatsApp> createState() => _FloatingWhatsAppState();
+}
+
+class _FloatingWhatsAppState extends State<_FloatingWhatsApp> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat(reverse: true);
+  }
+  @override
+  void dispose() { _controller.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: Tween<double>(begin: 1.0, end: 1.1).animate(_controller),
+      child: FloatingActionButton.extended(
+        onPressed: widget.onPressed,
+        backgroundColor: const Color(0xFF25D366),
+        icon: const Icon(Icons.chat, color: Colors.white),
+        label: const Text('Direct Enquire', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+}
+
+class _AnimatedText extends StatelessWidget {
+  final String text;
+  final TextStyle style;
+  final int delay;
+  const _AnimatedText({required this.text, required this.style, required this.delay});
 
   @override
   Widget build(BuildContext context) {
-    // Simplified version to avoid "empty" screen issues
-    // Content will fade in smoothly when built
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 1000),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOutQuart,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 20 * (1 - value)),
-            child: child,
-          ),
-        );
-      },
-      child: child,
-    );
+    return _AnimatedWelcomeText(text: text, style: style, delay: delay);
   }
 }
