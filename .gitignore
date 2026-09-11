@@ -1,0 +1,54 @@
+# Flutter-specific
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Web-specific
+build/web/
+
+# Android-specific
+/android/local.properties
+/android/key.properties
+/android/app/src/main/res/raw/
+/android/app/src/main/res/drawable/
+/android/*.keystore
+!/android/app/key.properties
+!/android/app/*.keystore
+
+# iOS-specific
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/flutter_export_environment.sh
+/ios/ServiceDefinitions.json
+/ios/Runner/GeneratedPluginRegistrant.[mh]
+/ios/Runner/GeneratedPluginRegistrant.swift
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/App.framework
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+
+# macOS-specific
+/macos/Flutter/Generated.xcconfig
+/macos/Flutter/flutter_export_environment.sh
+/macos/Runner/GeneratedPluginRegistrant.swift
+/macos/Pods/
+
+# Windows-specific
+/windows/flutter/generated_config.xcconfig
+
+# Linux-specific
+/linux/flutter/generated_config.xcconfig
+
+# IDE-specific
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# OS-specific
+.DS_Store
+Thumbs.db
