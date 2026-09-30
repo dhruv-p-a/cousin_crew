@@ -1,17 +1,24 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:video_player/video_player.dart';
+
+// Web file upload helper import (guarded for web)
+import 'dart:html' as html if (dart.library.io) 'dart:io';
 
 void main() {
   runApp(const CousinCrewApp());
 }
 
-// Global Shared Data Store for Gallery Items (Dynamic State)
+// Global Shared Data Store for Gallery Items (Supports Images & Auto-Play Videos)
 class GalleryItemModel {
   final String id;
   final String title;
   final String category;
   final String description;
-  final String imageUrl;
+  final String imageUrl; // Image/Video URL, Blob or Asset Path
+  final bool isVideo;
 
   GalleryItemModel({
     required this.id,
@@ -19,6 +26,7 @@ class GalleryItemModel {
     required this.category,
     required this.description,
     required this.imageUrl,
+    this.isVideo = false,
   });
 }
 
@@ -183,7 +191,17 @@ class GalleryDataStore extends ChangeNotifier {
       imageUrl: 'assets/images/birthday photo  (22).jpeg',
     ),
 
-    // Anniversary & Wedding Gallery Samples
+    // Sample Auto-Playing Video Reel Item
+    GalleryItemModel(
+      id: 'v1',
+      title: 'Royal Wedding Entry Highlights',
+      category: 'WEDDINGS',
+      description: 'Cinematic grand couple entry with cold pyros and smoke fountain effects.',
+      imageUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+      isVideo: true,
+    ),
+
+    // Anniversary & Wedding Samples
     GalleryItemModel(
       id: 'a1',
       title: 'Silver 25th Anniversary Gala',
@@ -231,6 +249,74 @@ class GalleryDataStore extends ChangeNotifier {
   void removeItem(String id) {
     _items.removeWhere((item) => item.id == id);
     notifyListeners();
+  }
+
+  void updateItem(GalleryItemModel updatedItem) {
+    final index = _items.indexWhere((item) => item.id == updatedItem.id);
+    if (index != -1) {
+      _items[index] = updatedItem;
+      notifyListeners();
+    }
+  }
+}
+
+// Auto-Playing Video Player Widget (Looped & Muted for Smooth Playback)
+class AutoPlayVideoWidget extends StatefulWidget {
+  final String videoUrl;
+  const AutoPlayVideoWidget({super.key, required this.videoUrl});
+
+  @override
+  State<AutoPlayVideoWidget> createState() => _AutoPlayVideoWidgetState();
+}
+
+class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
+  late VideoPlayerController _controller;
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.videoUrl.startsWith('http') || widget.videoUrl.startsWith('blob:')) {
+      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+    } else {
+      _controller = VideoPlayerController.asset(widget.videoUrl);
+    }
+
+    _controller.initialize().then((_) {
+      if (mounted) {
+        setState(() => _initialized = true);
+        _controller.setLooping(true);
+        _controller.setVolume(0.0); // Muted for autoplay compliance
+        _controller.play();
+      }
+    }).catchError((err) {
+      print("Video error: $err");
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_initialized) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AspectRatio(
+          aspectRatio: _controller.value.aspectRatio,
+          child: VideoPlayer(_controller),
+        ),
+      );
+    }
+    return Container(
+      color: Colors.black12,
+      child: const Center(
+        child: CircularProgressIndicator(color: Color(0xFFC5A059)),
+      ),
+    );
   }
 }
 
@@ -384,11 +470,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         _navButton('SERVICES', () => _scrollToSection(850)),
                         _navButton('COLLECTIONS', () => _scrollToSection(2400)),
                         _navButton('GALLERY PAGE', _openGalleryPage),
-                        _navButton('REVIEWS', () => _scrollToSection(3900)),
-                        _navButton('CONTACT', () => _scrollToSection(4700)),
+                        _navButton('REVIEWS', () => _scrollToSection(4500)),
+                        _navButton('CONTACT', () => _scrollToSection(5300)),
                         const SizedBox(width: 20),
                         _AnimatedBookButton(
-                          onPressed: () => _scrollToSection(4700),
+                          onPressed: () => _scrollToSection(5300),
                         ),
                         const SizedBox(width: 20),
                       ]
@@ -400,6 +486,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   _buildParallaxHero(isDesktop),
                   _buildAnimatedStats(),
                   _buildInteractiveCollections(isDesktop),
+                  _buildAutoScrollingVideoStrip(isDesktop),
                   _buildAnimatedReviews(),
                   _buildLuxuryBookingSection(isDesktop),
                   _buildFooter(),
@@ -564,7 +651,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           text: 'BOOK AN EVENT',
                           bgColor: darkBrown,
                           textColor: Colors.white,
-                          onPressed: () => _scrollToSection(4700),
+                          onPressed: () => _scrollToSection(5300),
                         ),
                         _HoverScaleButton(
                           text: 'EXPLORE GALLERY',
@@ -691,6 +778,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildAutoScrollingVideoStrip(bool isDesktop) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 100),
+      color: Colors.white,
+      child: Column(
+        children: [
+          _FadeSlideEntrance(
+            child: Column(
+              children: [
+                Text(
+                  'Live Event Reels',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: isDesktop ? 46 : 32,
+                    fontWeight: FontWeight.w900,
+                    color: primaryColor,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(height: 3, width: 70, color: secondaryColor),
+                const SizedBox(height: 15),
+                Text(
+                  'Auto-playing live highlights from our Gujarat weddings & celebrations',
+                  style: GoogleFonts.montserrat(color: Colors.grey[600], fontSize: 15),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 60),
+          const _AutoScrollingVideoReelsStrip(),
+        ],
+      ),
+    );
+  }
+
   void _openDetailsDialog(BuildContext context, String title, String fullDesc, String imgUrl) {
     showDialog(
       context: context,
@@ -737,7 +859,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      _scrollToSection(4700);
+                      _scrollToSection(5300);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: secondaryColor,
@@ -758,7 +880,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildAnimatedReviews() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 110),
-      color: Colors.white,
+      color: surfaceColor,
       child: Column(
         children: [
           Text(
@@ -1067,7 +1189,162 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-// Full Interactive Gallery Page Component with Birthday & Anniversary Categories
+// Auto-scrolling Video Reels Strip Widget (Right to Left Continuous Movement)
+class _AutoScrollingVideoReelsStrip extends StatefulWidget {
+  const _AutoScrollingVideoReelsStrip();
+
+  @override
+  State<_AutoScrollingVideoReelsStrip> createState() => _AutoScrollingVideoReelsStripState();
+}
+
+class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsStrip> {
+  late ScrollController _scrollController;
+
+  final List<Map<String, String>> _reels = const [
+    {
+      'title': 'Grand Bride & Groom Entry',
+      'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+    },
+    {
+      'title': 'Royal Mandap Garland Exchange',
+      'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+    },
+    {
+      'title': 'Sangeet Stage Pyro Show',
+      'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+    },
+    {
+      'title': 'Vibrant Haldi Flower Shower',
+      'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+    },
+    {
+      'title': '1st Birthday Cake Throne Entry',
+      'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startAutoScroll();
+    });
+  }
+
+  void _startAutoScroll() {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted && _scrollController.hasClients) {
+        _animateScroll();
+      }
+    });
+  }
+
+  void _animateScroll() {
+    if (!mounted || !_scrollController.hasClients) return;
+    double maxScroll = _scrollController.position.maxScrollExtent;
+    double currentScroll = _scrollController.offset;
+    if (currentScroll >= maxScroll - 10) {
+      _scrollController.jumpTo(0);
+    }
+    _scrollController
+        .animateTo(
+          _scrollController.offset + 180,
+          duration: const Duration(seconds: 2),
+          curve: Curves.linear,
+        )
+        .then((_) {
+      if (mounted) {
+        _animateScroll();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 380,
+      child: ListView.builder(
+        controller: _scrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: _reels.length * 50,
+        itemBuilder: (context, index) {
+          final reel = _reels[index % _reels.length];
+          return Container(
+            width: 280,
+            margin: const EdgeInsets.symmetric(horizontal: 15),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(20),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                )
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: AutoPlayVideoWidget(videoUrl: reel['url']!),
+                        ),
+                        Positioned(
+                          top: 12,
+                          right: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFC5A059),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: const Text(
+                              'LIVE REEL',
+                              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      reel['title']!,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0A192F),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Full Interactive Gallery Page Component
 class GalleryPage extends StatefulWidget {
   const GalleryPage({super.key});
 
@@ -1188,7 +1465,7 @@ class _GalleryPageState extends State<GalleryPage> {
                 ? Padding(
                     padding: const EdgeInsets.symmetric(vertical: 60),
                     child: Text(
-                      'No photos added yet in this category.',
+                      'No media added yet in this category.',
                       style: GoogleFonts.montserrat(fontSize: 16, color: Colors.grey[500]),
                     ),
                   )
@@ -1234,9 +1511,11 @@ class _GalleryPageState extends State<GalleryPage> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: item.imageUrl.startsWith('http')
-                    ? Image.network(item.imageUrl, height: 400, width: double.infinity, fit: BoxFit.cover)
-                    : Image.asset(item.imageUrl, height: 400, width: double.infinity, fit: BoxFit.cover),
+                child: item.isVideo
+                    ? AutoPlayVideoWidget(videoUrl: item.imageUrl)
+                    : item.imageUrl.startsWith('http')
+                        ? Image.network(item.imageUrl, height: 400, width: double.infinity, fit: BoxFit.cover)
+                        : Image.asset(item.imageUrl, height: 400, width: double.infinity, fit: BoxFit.cover),
               ),
               const SizedBox(height: 20),
               Row(
@@ -1333,20 +1612,51 @@ class _GalleryPhotoCardState extends State<_GalleryPhotoCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: AnimatedScale(
-                    scale: _hovering ? 1.05 : 1.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: widget.item.imageUrl.startsWith('http')
-                        ? Image.network(
-                            widget.item.imageUrl,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          )
-                        : Image.asset(
-                            widget.item.imageUrl,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: AnimatedScale(
+                          scale: _hovering ? 1.05 : 1.0,
+                          duration: const Duration(milliseconds: 300),
+                          child: widget.item.isVideo
+                              ? AutoPlayVideoWidget(videoUrl: widget.item.imageUrl)
+                              : widget.item.imageUrl.startsWith('http')
+                                  ? Image.network(
+                                      widget.item.imageUrl,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.asset(
+                                      widget.item.imageUrl,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
+                        ),
+                      ),
+                      if (widget.item.isVideo)
+                        Positioned(
+                          top: 12,
+                          right: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withAlpha(160),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.play_circle_fill, color: Colors.white, size: 14),
+                                SizedBox(width: 4),
+                                Text(
+                                  'VIDEO REEL',
+                                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
                           ),
+                        ),
+                    ],
                   ),
                 ),
                 Padding(
@@ -1364,7 +1674,7 @@ class _GalleryPhotoCardState extends State<_GalleryPhotoCard> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Click to view details & photos',
+                        widget.item.isVideo ? 'Auto-playing Video Reel' : 'Click to view details & photo',
                         style: GoogleFonts.montserrat(fontSize: 12, color: Colors.grey[500]),
                       ),
                     ],
@@ -1394,11 +1704,12 @@ class _AdminPageState extends State<AdminPage> {
   final TextEditingController _passwordController = TextEditingController();
   String _loginError = '';
 
-  // Form Controllers for Adding New Photo
+  // Form Controllers for Adding/Editing Photo or Video
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
   String _selectedCategory = 'BIRTHDAY';
+  bool _isVideo = false;
 
   void _handleLogin() {
     final email = _emailController.text.trim();
@@ -1416,10 +1727,37 @@ class _AdminPageState extends State<AdminPage> {
     }
   }
 
+  void _triggerDirectFileUpload() {
+    if (kIsWeb) {
+      final uploadInput = html.FileUploadInputElement();
+      uploadInput.accept = _isVideo ? 'video/mp4,video/*' : 'image/*';
+      uploadInput.click();
+
+      uploadInput.onChange.listen((e) {
+        final files = uploadInput.files;
+        if (files != null && files.isNotEmpty) {
+          final file = files[0];
+          final url = html.Url.createObjectUrlFromBlob(file);
+          setState(() {
+            _urlController.text = url;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Selected File: ${file.name}')),
+          );
+        }
+      });
+    } else {
+      // Fallback for non-web
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter asset path or URL in non-web mode')),
+      );
+    }
+  }
+
   void _handleAddNewPhoto() {
     if (_titleController.text.isEmpty || _urlController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill Title and Image URL / Asset Path')),
+        const SnackBar(content: Text('Please select a photo/video file or enter URL')),
       );
       return;
     }
@@ -1432,6 +1770,7 @@ class _AdminPageState extends State<AdminPage> {
           ? 'Special $_selectedCategory setup by Cousin Crews.'
           : _descController.text.trim(),
       imageUrl: _urlController.text.trim(),
+      isVideo: _isVideo,
     );
 
     GalleryDataStore.instance.addItem(newItem);
@@ -1439,9 +1778,10 @@ class _AdminPageState extends State<AdminPage> {
     _titleController.clear();
     _descController.clear();
     _urlController.clear();
+    setState(() => _isVideo = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('New Event Photo Added Successfully to Gallery!')),
+      SnackBar(content: Text('New ${_isVideo ? "Video" : "Photo"} Added Successfully to Gallery!')),
     );
   }
 
@@ -1497,7 +1837,7 @@ class _AdminPageState extends State<AdminPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Enter your admin credentials to manage gallery photos',
+            'Enter your admin credentials to manage gallery photos & videos',
             style: GoogleFonts.montserrat(color: Colors.grey[600], fontSize: 13),
           ),
           const SizedBox(height: 30),
@@ -1582,15 +1922,15 @@ class _AdminPageState extends State<AdminPage> {
           const Divider(),
           const SizedBox(height: 30),
 
-          // Add Photo Section
-          Text('Add New Event Photo', style: GoogleFonts.playfairDisplay(fontSize: 22, fontWeight: FontWeight.bold)),
+          // Add Photo/Video Section
+          Text('Add New Event Photo or Auto-Play Video', style: GoogleFonts.playfairDisplay(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Photo Title (e.g. 1st Birthday Theme)', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(labelText: 'Title (e.g. Royal Entrance)', border: OutlineInputBorder()),
                 ),
               ),
               const SizedBox(width: 15),
@@ -1612,12 +1952,48 @@ class _AdminPageState extends State<AdminPage> {
             ],
           ),
           const SizedBox(height: 15),
-          TextField(
-            controller: _urlController,
-            decoration: const InputDecoration(
-              labelText: 'Image URL or Asset Path (e.g. assets/images/my_photo.jpg or https://...)',
-              border: OutlineInputBorder(),
+
+          // Direct File Upload Button (No Location Typing Required!)
+          InkWell(
+            onTap: _triggerDirectFileUpload,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFAF9F5),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFC5A059)),
+              ),
+              child: Row(
+                children: [
+                  Icon(_urlController.text.isNotEmpty ? Icons.check_circle : Icons.upload_file,
+                      color: _urlController.text.isNotEmpty ? Colors.green : const Color(0xFFC5A059)),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Text(
+                      _urlController.text.isNotEmpty
+                          ? 'Media Selected: ${_urlController.text}'
+                          : 'CHOOSE PHOTO OR VIDEO FILE FROM COMPUTER',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _urlController.text.isNotEmpty ? Colors.green : const Color(0xFF0A192F),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ),
+
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Checkbox(
+                value: _isVideo,
+                onChanged: (val) => setState(() => _isVideo = val ?? false),
+              ),
+              const Text('This is an Auto-Playing MP4 Video Reel', style: TextStyle(fontWeight: FontWeight.bold)),
+            ],
           ),
           const SizedBox(height: 15),
           TextField(
@@ -1628,8 +2004,8 @@ class _AdminPageState extends State<AdminPage> {
           const SizedBox(height: 20),
           ElevatedButton.icon(
             onPressed: _handleAddNewPhoto,
-            icon: const Icon(Icons.add_a_photo),
-            label: const Text('ADD PHOTO TO GALLERY'),
+            icon: Icon(_isVideo ? Icons.video_call : Icons.add_a_photo),
+            label: Text(_isVideo ? 'ADD AUTO-PLAY VIDEO TO GALLERY' : 'ADD PHOTO TO GALLERY'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFC5A059),
               foregroundColor: Colors.white,
@@ -1642,7 +2018,7 @@ class _AdminPageState extends State<AdminPage> {
           const SizedBox(height: 30),
 
           // Existing Items List
-          Text('Existing Photos (${items.length})', style: GoogleFonts.playfairDisplay(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text('Existing Media Items (${items.length})', style: GoogleFonts.playfairDisplay(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
 
           ListView.builder(
@@ -1656,27 +2032,178 @@ class _AdminPageState extends State<AdminPage> {
                 child: ListTile(
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: item.imageUrl.startsWith('http')
-                        ? Image.network(item.imageUrl, width: 60, height: 60, fit: BoxFit.cover)
-                        : Image.asset(item.imageUrl, width: 60, height: 60, fit: BoxFit.cover),
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      color: Colors.black12,
+                      child: item.isVideo
+                          ? const Icon(Icons.play_circle_fill, color: Color(0xFFC5A059), size: 30)
+                          : item.imageUrl.startsWith('http') || item.imageUrl.startsWith('blob:')
+                              ? Image.network(item.imageUrl, width: 60, height: 60, fit: BoxFit.cover)
+                              : Image.asset(item.imageUrl, width: 60, height: 60, fit: BoxFit.cover),
+                    ),
                   ),
-                  title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Row(
+                    children: [
+                      Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      if (item.isVideo) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(color: Colors.blue.withAlpha(40), borderRadius: BorderRadius.circular(4)),
+                          child: const Text('VIDEO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue)),
+                        )
+                      ],
+                    ],
+                  ),
                   subtitle: Text('${item.category} • ${item.description}'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      GalleryDataStore.instance.removeItem(item.id);
-                      setState(() {});
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Photo Removed')),
-                      );
-                    },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Color(0xFFC5A059)),
+                        onPressed: () => _openEditPhotoDialog(item),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          GalleryDataStore.instance.removeItem(item.id);
+                          setState(() {});
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Item Removed')),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
               );
             },
           ),
         ],
+      ),
+    );
+  }
+
+  void _openEditPhotoDialog(GalleryItemModel item) {
+    final titleEdit = TextEditingController(text: item.title);
+    final descEdit = TextEditingController(text: item.description);
+    final urlEdit = TextEditingController(text: item.imageUrl);
+    String catEdit = item.category;
+    bool isVideoEdit = item.isVideo;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Edit Media Details', style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleEdit,
+                  decoration: const InputDecoration(labelText: 'Title'),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: catEdit,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  items: [
+                    'BIRTHDAY',
+                    'ANNIVERSARY',
+                    'WEDDINGS',
+                    'HALDI / MEHNDI',
+                    'STAGE DECOR',
+                    'CATERING'
+                  ].map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
+                  onChanged: (val) => catEdit = val!,
+                ),
+                const SizedBox(height: 12),
+                InkWell(
+                  onTap: () {
+                    if (kIsWeb) {
+                      final uploadInput = html.FileUploadInputElement();
+                      uploadInput.accept = isVideoEdit ? 'video/mp4,video/*' : 'image/*';
+                      uploadInput.click();
+
+                      uploadInput.onChange.listen((e) {
+                        final files = uploadInput.files;
+                        if (files != null && files.isNotEmpty) {
+                          final file = files[0];
+                          final url = html.Url.createObjectUrlFromBlob(file);
+                          setDialogState(() {
+                            urlEdit.text = url;
+                          });
+                        }
+                      });
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 15),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAF9F5),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFC5A059)),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.upload_file, color: Color(0xFFC5A059)),
+                        SizedBox(width: 10),
+                        Expanded(child: Text('CLICK TO CHOOSE NEW FILE FROM COMPUTER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isVideoEdit,
+                      onChanged: (val) => setDialogState(() => isVideoEdit = val ?? false),
+                    ),
+                    const Text('Auto-Playing MP4 Video Reel', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descEdit,
+                  maxLines: 3,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final updated = GalleryItemModel(
+                  id: item.id,
+                  title: titleEdit.text.trim(),
+                  category: catEdit,
+                  description: descEdit.text.trim(),
+                  imageUrl: urlEdit.text.trim(),
+                  isVideo: isVideoEdit,
+                );
+                GalleryDataStore.instance.updateItem(updated);
+                Navigator.pop(context);
+                setState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Item Updated Successfully!')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0A192F),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Save Changes'),
+            ),
+          ],
+        ),
       ),
     );
   }
