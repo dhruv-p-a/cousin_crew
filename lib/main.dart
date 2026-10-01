@@ -12,13 +12,13 @@ void main() {
   runApp(const CousinCrewApp());
 }
 
-// Global Shared Data Store for Gallery Items (Supports Images & Auto-Play Videos with LocalStorage Persistence)
+// Global Shared Data Store for Gallery Items (Supports Base64 Images & Videos with Permanent LocalStorage)
 class GalleryItemModel {
   final String id;
   final String title;
   final String category;
   final String description;
-  final String imageUrl; // Image/Video URL, Blob or Asset Path
+  final String imageUrl; // Image/Video URL, Base64 Data URL or Asset Path
   final bool isVideo;
 
   GalleryItemModel({
@@ -256,7 +256,7 @@ class GalleryDataStore extends ChangeNotifier {
           'imageUrl': item.imageUrl,
           'isVideo': item.isVideo,
         }).toList();
-        html.window.localStorage['cousin_crew_gallery_data'] = jsonEncode(jsonList);
+        html.window.localStorage['cousin_crew_gallery_v2'] = jsonEncode(jsonList);
       } catch (e) {
         print("Storage save error: $e");
       }
@@ -266,19 +266,21 @@ class GalleryDataStore extends ChangeNotifier {
   void _loadFromStorage() {
     if (kIsWeb) {
       try {
-        final savedJson = html.window.localStorage['cousin_crew_gallery_data'];
+        final savedJson = html.window.localStorage['cousin_crew_gallery_v2'];
         if (savedJson != null && savedJson.isNotEmpty) {
           final List<dynamic> decoded = jsonDecode(savedJson);
-          _items.clear();
-          for (var map in decoded) {
-            _items.add(GalleryItemModel(
-              id: map['id'] ?? '',
-              title: map['title'] ?? '',
-              category: map['category'] ?? 'BIRTHDAY',
-              description: map['description'] ?? '',
-              imageUrl: map['imageUrl'] ?? '',
-              isVideo: map['isVideo'] ?? false,
-            ));
+          if (decoded.isNotEmpty) {
+            _items.clear();
+            for (var map in decoded) {
+              _items.add(GalleryItemModel(
+                id: map['id'] ?? '',
+                title: map['title'] ?? '',
+                category: map['category'] ?? 'BIRTHDAY',
+                description: map['description'] ?? '',
+                imageUrl: map['imageUrl'] ?? '',
+                isVideo: map['isVideo'] ?? false,
+              ));
+            }
           }
         }
       } catch (e) {
@@ -325,7 +327,9 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
   @override
   void initState() {
     super.initState();
-    if (widget.videoUrl.startsWith('http') || widget.videoUrl.startsWith('blob:')) {
+    if (widget.videoUrl.startsWith('http') ||
+        widget.videoUrl.startsWith('blob:') ||
+        widget.videoUrl.startsWith('data:')) {
       _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
     } else {
       _controller = VideoPlayerController.asset(widget.videoUrl);
@@ -500,7 +504,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       children: [
                         Image.asset(
                           'assets/images/logo.png',
-                          height: 60,
+                          height: 65,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) => Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1198,13 +1202,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         children: [
           Image.asset(
             'assets/images/logo.png',
-            height: 75,
+            height: 90,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) => Text(
               'COUSIN CREWS',
               style: GoogleFonts.playfairDisplay(
                 color: Colors.white,
-                fontSize: 32,
+                fontSize: 36,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -1467,12 +1471,17 @@ class _GalleryPageState extends State<GalleryPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 2,
-        title: Text(
-          'COUSIN CREWS GALLERY',
-          style: GoogleFonts.playfairDisplay(
-            color: const Color(0xFF0A192F),
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
+        title: Image.asset(
+          'assets/images/logo.png',
+          height: 50,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) => Text(
+            'COUSIN CREWS GALLERY',
+            style: GoogleFonts.playfairDisplay(
+              color: const Color(0xFF0A192F),
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
           ),
         ),
         iconTheme: const IconThemeData(color: Color(0xFF0A192F)),
@@ -1586,7 +1595,9 @@ class _GalleryPageState extends State<GalleryPage> {
                 borderRadius: BorderRadius.circular(12),
                 child: item.isVideo
                     ? AutoPlayVideoWidget(videoUrl: item.imageUrl)
-                    : item.imageUrl.startsWith('http') || item.imageUrl.startsWith('blob:')
+                    : item.imageUrl.startsWith('http') ||
+                            item.imageUrl.startsWith('blob:') ||
+                            item.imageUrl.startsWith('data:')
                         ? Image.network(item.imageUrl, height: 400, width: double.infinity, fit: BoxFit.cover)
                         : Image.asset(item.imageUrl, height: 400, width: double.infinity, fit: BoxFit.cover),
               ),
@@ -1693,7 +1704,9 @@ class _GalleryPhotoCardState extends State<_GalleryPhotoCard> {
                           duration: const Duration(milliseconds: 300),
                           child: widget.item.isVideo
                               ? AutoPlayVideoWidget(videoUrl: widget.item.imageUrl)
-                              : widget.item.imageUrl.startsWith('http') || widget.item.imageUrl.startsWith('blob:')
+                              : widget.item.imageUrl.startsWith('http') ||
+                                      widget.item.imageUrl.startsWith('blob:') ||
+                                      widget.item.imageUrl.startsWith('data:')
                                   ? Image.network(
                                       widget.item.imageUrl,
                                       width: double.infinity,
@@ -1810,13 +1823,17 @@ class _AdminPageState extends State<AdminPage> {
         final files = uploadInput.files;
         if (files != null && files.isNotEmpty) {
           final file = files[0];
-          final url = html.Url.createObjectUrlFromBlob(file);
-          setState(() {
-            _urlController.text = url;
+          final reader = html.FileReader();
+          reader.readAsDataUrl(file);
+          reader.onLoadEnd.listen((e) {
+            final resultDataUrl = reader.result as String;
+            setState(() {
+              _urlController.text = resultDataUrl; // Permanent Base64 Data URL!
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Selected & Saved File: ${file.name}')),
+            );
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Selected File: ${file.name}')),
-          );
         }
       });
     } else {
@@ -1853,7 +1870,7 @@ class _AdminPageState extends State<AdminPage> {
     setState(() => _isVideo = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('New ${_isVideo ? "Video" : "Photo"} Added Successfully to Gallery!')),
+      SnackBar(content: Text('New ${_isVideo ? "Video" : "Photo"} Added & Permanently Saved!')),
     );
   }
 
@@ -2041,7 +2058,7 @@ class _AdminPageState extends State<AdminPage> {
                   Expanded(
                     child: Text(
                       _urlController.text.isNotEmpty
-                          ? 'Media Selected: ${_urlController.text}'
+                          ? 'Media Selected & Ready to Save!'
                           : 'CHOOSE PHOTO OR VIDEO FILE FROM COMPUTER',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -2107,7 +2124,7 @@ class _AdminPageState extends State<AdminPage> {
                       color: Colors.black12,
                       child: item.isVideo
                           ? const Icon(Icons.play_circle_fill, color: Color(0xFFC5A059), size: 30)
-                          : item.imageUrl.startsWith('http') || item.imageUrl.startsWith('blob:')
+                          : item.imageUrl.startsWith('http') || item.imageUrl.startsWith('blob:') || item.imageUrl.startsWith('data:')
                               ? Image.network(item.imageUrl, width: 60, height: 60, fit: BoxFit.cover)
                               : Image.asset(item.imageUrl, width: 60, height: 60, fit: BoxFit.cover),
                     ),
@@ -2200,9 +2217,13 @@ class _AdminPageState extends State<AdminPage> {
                         final files = uploadInput.files;
                         if (files != null && files.isNotEmpty) {
                           final file = files[0];
-                          final url = html.Url.createObjectUrlFromBlob(file);
-                          setDialogState(() {
-                            urlEdit.text = url;
+                          final reader = html.FileReader();
+                          reader.readAsDataUrl(file);
+                          reader.onLoadEnd.listen((e) {
+                            final resultUrl = reader.result as String;
+                            setDialogState(() {
+                              urlEdit.text = resultUrl;
+                            });
                           });
                         }
                       });
