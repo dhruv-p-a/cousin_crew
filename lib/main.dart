@@ -1,17 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 
-// Web file upload helper import (guarded for web)
+// Web file upload & local storage helper import (guarded for web)
 import 'dart:html' as html if (dart.library.io) 'dart:io';
 
 void main() {
   runApp(const CousinCrewApp());
 }
 
-// Global Shared Data Store for Gallery Items (Supports Images & Auto-Play Videos)
+// Global Shared Data Store for Gallery Items (Supports Images & Auto-Play Videos with LocalStorage Persistence)
 class GalleryItemModel {
   final String id;
   final String title;
@@ -32,7 +33,10 @@ class GalleryItemModel {
 
 class GalleryDataStore extends ChangeNotifier {
   static final GalleryDataStore instance = GalleryDataStore._internal();
-  GalleryDataStore._internal();
+
+  GalleryDataStore._internal() {
+    _loadFromStorage();
+  }
 
   final List<GalleryItemModel> _items = [
     // 22 Birthday Photos from local assets/images/
@@ -241,13 +245,57 @@ class GalleryDataStore extends ChangeNotifier {
 
   List<GalleryItemModel> get items => List.unmodifiable(_items);
 
+  void _saveToStorage() {
+    if (kIsWeb) {
+      try {
+        final jsonList = _items.map((item) => {
+          'id': item.id,
+          'title': item.title,
+          'category': item.category,
+          'description': item.description,
+          'imageUrl': item.imageUrl,
+          'isVideo': item.isVideo,
+        }).toList();
+        html.window.localStorage['cousin_crew_gallery_data'] = jsonEncode(jsonList);
+      } catch (e) {
+        print("Storage save error: $e");
+      }
+    }
+  }
+
+  void _loadFromStorage() {
+    if (kIsWeb) {
+      try {
+        final savedJson = html.window.localStorage['cousin_crew_gallery_data'];
+        if (savedJson != null && savedJson.isNotEmpty) {
+          final List<dynamic> decoded = jsonDecode(savedJson);
+          _items.clear();
+          for (var map in decoded) {
+            _items.add(GalleryItemModel(
+              id: map['id'] ?? '',
+              title: map['title'] ?? '',
+              category: map['category'] ?? 'BIRTHDAY',
+              description: map['description'] ?? '',
+              imageUrl: map['imageUrl'] ?? '',
+              isVideo: map['isVideo'] ?? false,
+            ));
+          }
+        }
+      } catch (e) {
+        print("Storage load error: $e");
+      }
+    }
+  }
+
   void addItem(GalleryItemModel item) {
     _items.add(item);
+    _saveToStorage();
     notifyListeners();
   }
 
   void removeItem(String id) {
     _items.removeWhere((item) => item.id == id);
+    _saveToStorage();
     notifyListeners();
   }
 
@@ -255,6 +303,7 @@ class GalleryDataStore extends ChangeNotifier {
     final index = _items.indexWhere((item) => item.id == updatedItem.id);
     if (index != -1) {
       _items[index] = updatedItem;
+      _saveToStorage();
       notifyListeners();
     }
   }
@@ -446,20 +495,30 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(8),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'COUSIN CREWS',
-                          style: GoogleFonts.playfairDisplay(
-                            color: primaryColor,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 26,
-                            letterSpacing: 3,
+                        Image.asset(
+                          'assets/images/logo.png',
+                          height: 60,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'COUSIN CREWS',
+                                style: GoogleFonts.playfairDisplay(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 26,
+                                  letterSpacing: 3,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              _ShimmerGoldLine(color: secondaryColor),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        _ShimmerGoldLine(color: secondaryColor),
                       ],
                     ),
                   ),
@@ -1137,6 +1196,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       color: primaryColor,
       child: Column(
         children: [
+          Image.asset(
+            'assets/images/logo.png',
+            height: 75,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => Text(
+              'COUSIN CREWS',
+              style: GoogleFonts.playfairDisplay(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -1513,7 +1586,7 @@ class _GalleryPageState extends State<GalleryPage> {
                 borderRadius: BorderRadius.circular(12),
                 child: item.isVideo
                     ? AutoPlayVideoWidget(videoUrl: item.imageUrl)
-                    : item.imageUrl.startsWith('http')
+                    : item.imageUrl.startsWith('http') || item.imageUrl.startsWith('blob:')
                         ? Image.network(item.imageUrl, height: 400, width: double.infinity, fit: BoxFit.cover)
                         : Image.asset(item.imageUrl, height: 400, width: double.infinity, fit: BoxFit.cover),
               ),
@@ -1620,7 +1693,7 @@ class _GalleryPhotoCardState extends State<_GalleryPhotoCard> {
                           duration: const Duration(milliseconds: 300),
                           child: widget.item.isVideo
                               ? AutoPlayVideoWidget(videoUrl: widget.item.imageUrl)
-                              : widget.item.imageUrl.startsWith('http')
+                              : widget.item.imageUrl.startsWith('http') || widget.item.imageUrl.startsWith('blob:')
                                   ? Image.network(
                                       widget.item.imageUrl,
                                       width: double.infinity,
@@ -1747,7 +1820,6 @@ class _AdminPageState extends State<AdminPage> {
         }
       });
     } else {
-      // Fallback for non-web
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter asset path or URL in non-web mode')),
       );
@@ -1922,7 +1994,6 @@ class _AdminPageState extends State<AdminPage> {
           const Divider(),
           const SizedBox(height: 30),
 
-          // Add Photo/Video Section
           Text('Add New Event Photo or Auto-Play Video', style: GoogleFonts.playfairDisplay(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           Row(
@@ -1953,7 +2024,6 @@ class _AdminPageState extends State<AdminPage> {
           ),
           const SizedBox(height: 15),
 
-          // Direct File Upload Button (No Location Typing Required!)
           InkWell(
             onTap: _triggerDirectFileUpload,
             child: Container(
@@ -2017,7 +2087,6 @@ class _AdminPageState extends State<AdminPage> {
           const Divider(),
           const SizedBox(height: 30),
 
-          // Existing Items List
           Text('Existing Media Items (${items.length})', style: GoogleFonts.playfairDisplay(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
 
