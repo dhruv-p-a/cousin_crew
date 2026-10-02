@@ -338,7 +338,7 @@ class GalleryDataStore extends ChangeNotifier {
   }
 }
 
-// Auto-Playing Video Player Widget with Interactive Sound Unmute & Restart Controls
+// Auto-Playing Video Player Widget with Sound Unmute & Restart Controls
 class AutoPlayVideoWidget extends StatefulWidget {
   final String videoUrl;
   final VoidCallback? onTapPlayWithSound;
@@ -400,19 +400,22 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
     });
   }
 
-  void _handleTapToggle() {
-    setState(() {
-      _isSoundOn = !_isSoundOn;
-      if (_isSoundOn) {
-        _controller.seekTo(Duration.zero); // Restart video from the beginning (0s)
-        _controller.setVolume(1.0); // Turn sound ON
-        _controller.play();
-        widget.onTapPlayWithSound?.call(); // Stop horizontal auto-scrolling
+  Future<void> _handleTapToggle() async {
+    try {
+      if (!_isSoundOn) {
+        await _controller.setVolume(1.0); // Turn 100% sound ON
+        await _controller.seekTo(Duration.zero); // Restart video from 0s
+        await _controller.play();
+        setState(() => _isSoundOn = true);
+        widget.onTapPlayWithSound?.call(); // Pause strip scrolling
       } else {
-        _controller.setVolume(0.0); // Mute sound
-        widget.onTapMuteAndResumeScroll?.call(); // Resume horizontal auto-scrolling
+        await _controller.setVolume(0.0); // Mute sound
+        setState(() => _isSoundOn = false);
+        widget.onTapMuteAndResumeScroll?.call(); // Resume strip scrolling
       }
-    });
+    } catch (e) {
+      print("Audio toggle error: $e");
+    }
   }
 
   @override
@@ -426,6 +429,7 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
     if (_initialized) {
       return GestureDetector(
         onTap: _handleTapToggle,
+        behavior: HitTestBehavior.opaque,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Stack(
@@ -437,25 +441,30 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
                 ),
               ),
               Positioned(
-                bottom: 10,
-                right: 10,
+                bottom: 12,
+                right: 12,
                 child: Material(
-                  color: _isSoundOn ? const Color(0xFFC5A059) : Colors.black.withAlpha(160),
-                  borderRadius: BorderRadius.circular(20),
+                  color: _isSoundOn ? const Color(0xFFC5A059) : Colors.black.withAlpha(180),
+                  borderRadius: BorderRadius.circular(25),
+                  elevation: 4,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           _isSoundOn ? Icons.volume_up : Icons.volume_off,
                           color: Colors.white,
-                          size: 16,
+                          size: 18,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         Text(
-                          _isSoundOn ? 'Playing with Sound' : 'Tap for Sound',
-                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          _isSoundOn ? 'Sound ON (Tap to Mute)' : 'Tap for Sound & Play',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
