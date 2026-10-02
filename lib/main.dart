@@ -338,13 +338,19 @@ class GalleryDataStore extends ChangeNotifier {
   }
 }
 
-// Clean Auto-Playing Video Player Widget
+// Auto-Playing Video Player Widget with Unmute Button ONLY when Selected/Tapped
 class AutoPlayVideoWidget extends StatefulWidget {
   final String videoUrl;
+  final bool isSelected;
+  final bool isSoundOn;
+  final VoidCallback onTap;
 
   const AutoPlayVideoWidget({
     super.key,
     required this.videoUrl,
+    this.isSelected = false,
+    this.isSoundOn = false,
+    required this.onTap,
   });
 
   @override
@@ -361,6 +367,22 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
     _initVideo();
   }
 
+  @override
+  void didUpdateWidget(AutoPlayVideoWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_initialized) {
+      if (widget.isSoundOn != oldWidget.isSoundOn) {
+        if (widget.isSoundOn) {
+          _controller.seekTo(Duration.zero);
+          _controller.setVolume(1.0);
+          _controller.play();
+        } else {
+          _controller.setVolume(0.0);
+        }
+      }
+    }
+  }
+
   void _initVideo() {
     if (widget.videoUrl.startsWith('http') ||
         widget.videoUrl.startsWith('blob:') ||
@@ -374,7 +396,7 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
       if (mounted) {
         setState(() => _initialized = true);
         _controller.setLooping(true);
-        _controller.setVolume(0.0);
+        _controller.setVolume(widget.isSoundOn ? 1.0 : 0.0);
         _controller.play();
       }
     }).catchError((err) {
@@ -387,7 +409,7 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
           if (mounted) {
             setState(() => _initialized = true);
             _controller.setLooping(true);
-            _controller.setVolume(0.0);
+            _controller.setVolume(widget.isSoundOn ? 1.0 : 0.0);
             _controller.play();
           }
         });
@@ -404,11 +426,55 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
   @override
   Widget build(BuildContext context) {
     if (_initialized) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: VideoPlayer(_controller),
+      return GestureDetector(
+        onTap: widget.onTap,
+        behavior: HitTestBehavior.opaque,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: AspectRatio(
+                  aspectRatio: _controller.value.aspectRatio,
+                  child: VideoPlayer(_controller),
+                ),
+              ),
+
+              // Unmute Button appears ONLY on the clicked reel card!
+              if (widget.isSelected)
+                Positioned(
+                  bottom: 12,
+                  right: 12,
+                  child: Material(
+                    color: widget.isSoundOn ? const Color(0xFFC5A059) : Colors.black.withAlpha(200),
+                    borderRadius: BorderRadius.circular(20),
+                    elevation: 6,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            widget.isSoundOn ? Icons.volume_up : Icons.volume_off,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.isSoundOn ? '🔊 Sound ON (Tap to Mute & Resume)' : '🔇 Tap to Unmute Sound',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       );
     }
@@ -1312,7 +1378,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-// Clean Auto-scrolling Video Reels Strip Widget
+// Auto-scrolling Video Reels Strip Widget
 class _AutoScrollingVideoReelsStrip extends StatefulWidget {
   const _AutoScrollingVideoReelsStrip();
 
@@ -1322,6 +1388,9 @@ class _AutoScrollingVideoReelsStrip extends StatefulWidget {
 
 class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsStrip> {
   late ScrollController _scrollController;
+  bool _isAutoScrolling = true;
+  int? _selectedReelIndex; // Track clicked reel card index
+  bool _isSoundOnForSelected = false;
 
   final List<Map<String, String>> _reels = const [
     {
@@ -1374,14 +1443,14 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
 
   void _startAutoScroll() {
     Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted && _scrollController.hasClients) {
+      if (mounted && _scrollController.hasClients && _isAutoScrolling) {
         _animateScroll();
       }
     });
   }
 
   void _animateScroll() {
-    if (!mounted || !_scrollController.hasClients) return;
+    if (!mounted || !_scrollController.hasClients || !_isAutoScrolling) return;
     double maxScroll = _scrollController.position.maxScrollExtent;
     double currentScroll = _scrollController.offset;
     if (currentScroll >= maxScroll - 10) {
@@ -1394,8 +1463,27 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
           curve: Curves.linear,
         )
         .then((_) {
-      if (mounted) {
+      if (mounted && _isAutoScrolling) {
         _animateScroll();
+      }
+    });
+  }
+
+  void _onReelTapped(int index) {
+    setState(() {
+      if (_selectedReelIndex == index) {
+        // Tapping the currently active reel toggles its sound or mutes and resumes!
+        _isSoundOnForSelected = !_isSoundOnForSelected;
+        if (!_isSoundOnForSelected) {
+          _selectedReelIndex = null;
+          _isAutoScrolling = true;
+          _animateScroll();
+        }
+      } else {
+        // Tapping a new reel card -> Select it, pause scrolling, show Unmute button ON THIS CARD ONLY!
+        _selectedReelIndex = index;
+        _isSoundOnForSelected = false; // Initially muted with Unmute button
+        _isAutoScrolling = false; // Pause scrolling
       }
     });
   }
@@ -1417,6 +1505,8 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
         itemCount: _reels.length * 50,
         itemBuilder: (context, index) {
           final reel = _reels[index % _reels.length];
+          final isSelected = _selectedReelIndex == index;
+          final isSoundOn = isSelected && _isSoundOnForSelected;
 
           return Container(
             width: 280,
@@ -1440,6 +1530,9 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
                   Expanded(
                     child: AutoPlayVideoWidget(
                       videoUrl: reel['url']!,
+                      isSelected: isSelected,
+                      isSoundOn: isSoundOn,
+                      onTap: () => _onReelTapped(index),
                     ),
                   ),
                   Padding(
@@ -1641,6 +1734,7 @@ class _GalleryPageState extends State<GalleryPage> {
                 child: item.isVideo
                     ? AutoPlayVideoWidget(
                         videoUrl: item.imageUrl,
+                        onTap: () {},
                       )
                     : item.imageUrl.startsWith('http') ||
                             item.imageUrl.startsWith('blob:') ||
@@ -1752,6 +1846,7 @@ class _GalleryPhotoCardState extends State<_GalleryPhotoCard> {
                           child: widget.item.isVideo
                               ? AutoPlayVideoWidget(
                                   videoUrl: widget.item.imageUrl,
+                                  onTap: () {},
                                 )
                               : widget.item.imageUrl.startsWith('http') ||
                                       widget.item.imageUrl.startsWith('blob:') ||
