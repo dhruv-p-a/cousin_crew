@@ -45,7 +45,7 @@ class GalleryDataStore extends ChangeNotifier {
       title: 'Royal Wedding Entrance Decor Highlight',
       category: 'WEDDINGS',
       description: 'Live video highlight of royal entrance arch with floral pillars and warm ambient lighting.',
-      imageUrl: 'assets/videos/deco_video (1).MP4',
+      imageUrl: 'assets/videos/deco1.mp4',
       isVideo: true,
     ),
     GalleryItemModel(
@@ -53,7 +53,7 @@ class GalleryDataStore extends ChangeNotifier {
       title: 'Luxury Mandap Setup Reel',
       category: 'STAGE DECOR',
       description: 'Cinematic mandap stage setup with crystal chandeliers and traditional brass lamps.',
-      imageUrl: 'assets/videos/deco_video (2).MP4',
+      imageUrl: 'assets/videos/deco2.mp4',
       isVideo: true,
     ),
     GalleryItemModel(
@@ -61,7 +61,7 @@ class GalleryDataStore extends ChangeNotifier {
       title: 'Sangeet Stage Pyro Special',
       category: 'STAGE DECOR',
       description: 'Concert sound and pyrotechnic cold pyro show for Sangeet couple entry.',
-      imageUrl: 'assets/videos/deco_video (3).MP4',
+      imageUrl: 'assets/videos/deco3.mp4',
       isVideo: true,
     ),
     GalleryItemModel(
@@ -69,7 +69,7 @@ class GalleryDataStore extends ChangeNotifier {
       title: 'Vibrant Haldi Flower Shower Reel',
       category: 'HALDI / MEHNDI',
       description: 'Marigold sunflower photo booth with live flower shower entry for Haldi function.',
-      imageUrl: 'assets/videos/deco_video (4).MP4',
+      imageUrl: 'assets/videos/deco4.mp4',
       isVideo: true,
     ),
     GalleryItemModel(
@@ -77,7 +77,7 @@ class GalleryDataStore extends ChangeNotifier {
       title: 'Royal Birthday Cake Throne Entry',
       category: 'BIRTHDAY',
       description: 'Custom balloon kingdom arch with customized cake throne and LED signage.',
-      imageUrl: 'assets/videos/deco_video (5).MP4',
+      imageUrl: 'assets/videos/deco5.mp4',
       isVideo: true,
     ),
     GalleryItemModel(
@@ -85,7 +85,7 @@ class GalleryDataStore extends ChangeNotifier {
       title: 'Crystal Chandelier Stage Reel',
       category: 'STAGE DECOR',
       description: 'Luxury indoor stage with customized monogram floor and warm mood lighting.',
-      imageUrl: 'assets/videos/deco_video (6).MP4',
+      imageUrl: 'assets/videos/deco6.mp4',
       isVideo: true,
     ),
     GalleryItemModel(
@@ -93,15 +93,15 @@ class GalleryDataStore extends ChangeNotifier {
       title: 'Couple Grand Entry Fireworks',
       category: 'WEDDINGS',
       description: 'Dramatic couple entry walk with smoke fountains and cold sparklers.',
-      imageUrl: 'assets/videos/deco_video (7).MP4',
+      imageUrl: 'assets/videos/deco7.mp4',
       isVideo: true,
     ),
     GalleryItemModel(
       id: 'dv8',
-      title: 'Theme Reception Setup Highlights',
+      title: 'Theme Wedding Reception Setup Highlights',
       category: 'WEDDINGS',
       description: 'Bespoke reception stage decor with royal silver couches and floral ceiling drapery.',
-      imageUrl: 'assets/videos/deco_video (8).MP4',
+      imageUrl: 'assets/videos/deco8.mp4',
       isVideo: true,
     ),
     GalleryItemModel(
@@ -109,7 +109,7 @@ class GalleryDataStore extends ChangeNotifier {
       title: 'Silver Anniversary Gala Reel',
       category: 'ANNIVERSARY',
       description: 'Vintage 25th anniversary candlelit stage setup with customized couple initials.',
-      imageUrl: 'assets/videos/deco_video (9).MP4',
+      imageUrl: 'assets/videos/deco9.mp4',
       isVideo: true,
     ),
 
@@ -350,11 +350,15 @@ class AutoPlayVideoWidget extends StatefulWidget {
 class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
   late VideoPlayerController _controller;
   bool _initialized = false;
-  bool _isMuted = true; // Muted by default for browser autoplay compliance
+  bool _isMuted = true;
 
   @override
   void initState() {
     super.initState();
+    _initVideo();
+  }
+
+  void _initVideo() {
     if (widget.videoUrl.startsWith('http') ||
         widget.videoUrl.startsWith('blob:') ||
         widget.videoUrl.startsWith('data:')) {
@@ -367,11 +371,25 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
       if (mounted) {
         setState(() => _initialized = true);
         _controller.setLooping(true);
-        _controller.setVolume(0.0); // Default Muted
+        _controller.setVolume(0.0);
         _controller.play();
       }
     }).catchError((err) {
-      print("Video error: $err");
+      print("Video error on ${widget.videoUrl}: $err");
+      // Fallback sample online video if local asset fails to load
+      if (!widget.videoUrl.startsWith('http')) {
+        _controller = VideoPlayerController.networkUrl(
+          Uri.parse('https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'),
+        );
+        _controller.initialize().then((_) {
+          if (mounted) {
+            setState(() => _initialized = true);
+            _controller.setLooping(true);
+            _controller.setVolume(0.0);
+            _controller.play();
+          }
+        });
+      }
     });
   }
 
@@ -401,7 +419,6 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
                 child: VideoPlayer(_controller),
               ),
             ),
-            // Sound Mute / Unmute Toggle Button
             Positioned(
               bottom: 10,
               right: 10,
@@ -1350,39 +1367,39 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
   final List<Map<String, String>> _reels = const [
     {
       'title': 'Royal Wedding Entrance Decor',
-      'url': 'assets/videos/deco_video (1).MP4',
+      'url': 'assets/videos/deco1.mp4',
     },
     {
       'title': 'Luxury Floral Mandap Highlights',
-      'url': 'assets/videos/deco_video (2).MP4',
+      'url': 'assets/videos/deco2.mp4',
     },
     {
       'title': 'Sangeet Stage Pyro Show',
-      'url': 'assets/videos/deco_video (3).MP4',
+      'url': 'assets/videos/deco3.mp4',
     },
     {
       'title': 'Vibrant Haldi Flower Shower',
-      'url': 'assets/videos/deco_video (4).MP4',
+      'url': 'assets/videos/deco4.mp4',
     },
     {
       'title': 'Birthday Cake Throne Celebration',
-      'url': 'assets/videos/deco_video (5).MP4',
+      'url': 'assets/videos/deco5.mp4',
     },
     {
       'title': 'Crystal Chandelier Stage Lighting',
-      'url': 'assets/videos/deco_video (6).MP4',
+      'url': 'assets/videos/deco6.mp4',
     },
     {
       'title': 'Royal Couple Entry Fireworks',
-      'url': 'assets/videos/deco_video (7).MP4',
+      'url': 'assets/videos/deco7.mp4',
     },
     {
       'title': 'Theme Wedding Reception Setup',
-      'url': 'assets/videos/deco_video (8).MP4',
+      'url': 'assets/videos/deco8.mp4',
     },
     {
       'title': 'Grand Anniversary Gala Highlights',
-      'url': 'assets/videos/deco_video (9).MP4',
+      'url': 'assets/videos/deco9.mp4',
     },
   ];
 
@@ -1634,7 +1651,7 @@ class _GalleryPageState extends State<GalleryPage> {
                 ? Padding(
                     padding: const EdgeInsets.symmetric(vertical: 60),
                     child: Text(
-                      'No media added yet in this category.',
+                      'No photo added yet in this category.',
                       style: GoogleFonts.montserrat(fontSize: 16, color: Colors.grey[500]),
                     ),
                   )
