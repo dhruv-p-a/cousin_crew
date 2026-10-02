@@ -341,12 +341,14 @@ class GalleryDataStore extends ChangeNotifier {
 // Auto-Playing Video Player Widget with Sound Unmute & Restart Controls
 class AutoPlayVideoWidget extends StatefulWidget {
   final String videoUrl;
+  final bool isSoundOn;
   final VoidCallback? onTapPlayWithSound;
   final VoidCallback? onTapMuteAndResumeScroll;
 
   const AutoPlayVideoWidget({
     super.key,
     required this.videoUrl,
+    this.isSoundOn = false,
     this.onTapPlayWithSound,
     this.onTapMuteAndResumeScroll,
   });
@@ -358,12 +360,29 @@ class AutoPlayVideoWidget extends StatefulWidget {
 class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
   late VideoPlayerController _controller;
   bool _initialized = false;
-  bool _isSoundOn = false;
+  late bool _isSoundOn;
 
   @override
   void initState() {
     super.initState();
+    _isSoundOn = widget.isSoundOn;
     _initVideo();
+  }
+
+  @override
+  void didUpdateWidget(AutoPlayVideoWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isSoundOn != oldWidget.isSoundOn && _initialized) {
+      _isSoundOn = widget.isSoundOn;
+      if (_isSoundOn) {
+        _controller.setVolume(1.0);
+        _controller.seekTo(Duration.zero);
+        _controller.play();
+      } else {
+        _controller.setVolume(0.0);
+      }
+      setState(() {});
+    }
   }
 
   void _initVideo() {
@@ -379,7 +398,7 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
       if (mounted) {
         setState(() => _initialized = true);
         _controller.setLooping(true);
-        _controller.setVolume(0.0); // Muted by default for browser autoplay policy
+        _controller.setVolume(_isSoundOn ? 1.0 : 0.0);
         _controller.play();
       }
     }).catchError((err) {
@@ -392,7 +411,7 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
           if (mounted) {
             setState(() => _initialized = true);
             _controller.setLooping(true);
-            _controller.setVolume(0.0);
+            _controller.setVolume(_isSoundOn ? 1.0 : 0.0);
             _controller.play();
           }
         });
@@ -441,11 +460,11 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
                 ),
               ),
               Positioned(
-                bottom: 12,
-                right: 12,
+                bottom: 10,
+                right: 10,
                 child: Material(
                   color: _isSoundOn ? const Color(0xFFC5A059) : Colors.black.withAlpha(180),
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(20),
                   elevation: 4,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -455,11 +474,11 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
                         Icon(
                           _isSoundOn ? Icons.volume_up : Icons.volume_off,
                           color: Colors.white,
-                          size: 18,
+                          size: 16,
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          _isSoundOn ? 'Sound ON (Tap to Mute)' : 'Tap for Sound & Play',
+                          _isSoundOn ? 'Sound ON' : 'Tap for Sound',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 11,
@@ -1376,7 +1395,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-// Auto-scrolling Video Reels Strip Widget with Interactive Tap & Sound Controls
+// Auto-scrolling Video Reels Strip Widget with Prominent Global Unmute/Mute Toggle Button
 class _AutoScrollingVideoReelsStrip extends StatefulWidget {
   const _AutoScrollingVideoReelsStrip();
 
@@ -1387,6 +1406,7 @@ class _AutoScrollingVideoReelsStrip extends StatefulWidget {
 class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsStrip> {
   late ScrollController _scrollController;
   bool _isAutoScrolling = true;
+  bool _isGlobalSoundOn = false;
 
   final List<Map<String, String>> _reels = const [
     {
@@ -1482,81 +1502,125 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 380,
-      child: ListView.builder(
-        controller: _scrollController,
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: _reels.length * 50,
-        itemBuilder: (context, index) {
-          final reel = _reels[index % _reels.length];
-          return Container(
-            width: 280,
-            margin: const EdgeInsets.symmetric(horizontal: 15),
-            decoration: BoxDecoration(
+    return Column(
+      children: [
+        // Prominent Common Sound Toggle Button right above the reels!
+        Padding(
+          padding: const EdgeInsets.only(bottom: 30),
+          child: ElevatedButton.icon(
+            onPressed: () {
+              setState(() {
+                _isGlobalSoundOn = !_isGlobalSoundOn;
+                if (_isGlobalSoundOn) {
+                  _pauseAutoScroll();
+                } else {
+                  _resumeAutoScroll();
+                }
+              });
+            },
+            icon: Icon(
+              _isGlobalSoundOn ? Icons.volume_up : Icons.volume_off,
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(20),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                )
-              ],
+              size: 22,
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: AutoPlayVideoWidget(
-                            videoUrl: reel['url']!,
-                            onTapPlayWithSound: _pauseAutoScroll,
-                            onTapMuteAndResumeScroll: _resumeAutoScroll,
-                          ),
-                        ),
-                        Positioned(
-                          top: 12,
-                          right: 12,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFC5A059),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: const Text(
-                              'LIVE REEL',
-                              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      reel['title']!,
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0A192F),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+            label: Text(
+              _isGlobalSoundOn
+                  ? '🔊 SOUND IS ON (CLICK TO MUTE & SCROLL)'
+                  : '🔇 CLICK HERE FOR REELS SOUND (UNMUTE ALL)',
+              style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+                fontSize: 13,
               ),
             ),
-          );
-        },
-      ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _isGlobalSoundOn ? const Color(0xFFC5A059) : const Color(0xFF0A192F),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 20),
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            ),
+          ),
+        ),
+
+        SizedBox(
+          height: 380,
+          child: ListView.builder(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: _reels.length * 50,
+            itemBuilder: (context, index) {
+              final reel = _reels[index % _reels.length];
+              return Container(
+                width: 280,
+                margin: const EdgeInsets.symmetric(horizontal: 15),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(20),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    )
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: AutoPlayVideoWidget(
+                                videoUrl: reel['url']!,
+                                isSoundOn: _isGlobalSoundOn,
+                                onTapPlayWithSound: _pauseAutoScroll,
+                                onTapMuteAndResumeScroll: _resumeAutoScroll,
+                              ),
+                            ),
+                            Positioned(
+                              top: 12,
+                              right: 12,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFC5A059),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: const Text(
+                                  'LIVE REEL',
+                                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          reel['title']!,
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0A192F),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -2252,7 +2316,7 @@ class _AdminPageState extends State<AdminPage> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: items.length,
-            itemBuilder: (context, index) {
+            itemBuilder: (index_ctx, index) {
               final item = items[index];
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
