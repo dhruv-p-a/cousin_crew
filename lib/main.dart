@@ -1547,10 +1547,11 @@ class _GalleryPageState extends State<GalleryPage> {
       'CATERING'
     ];
 
-    final allItems = GalleryDataStore.instance.items;
+    // Filter out videos so Gallery Page ONLY displays Photos!
+    final photoItems = GalleryDataStore.instance.items.where((item) => !item.isVideo).toList();
     final filteredItems = _selectedCategory == 'ALL'
-        ? allItems
-        : allItems.where((item) => item.category == _selectedCategory).toList();
+        ? photoItems
+        : photoItems.where((item) => item.category == _selectedCategory).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF9F5),
