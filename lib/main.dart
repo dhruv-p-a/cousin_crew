@@ -338,17 +338,15 @@ class GalleryDataStore extends ChangeNotifier {
   }
 }
 
-// Auto-Playing Video Player Widget with Unmute Button ONLY when Selected/Tapped
+// Auto-Playing Video Player Widget with Hidden Tap Area across Whole Reel Card
 class AutoPlayVideoWidget extends StatefulWidget {
   final String videoUrl;
-  final bool isSelected;
   final bool isSoundOn;
   final VoidCallback onTap;
 
   const AutoPlayVideoWidget({
     super.key,
     required this.videoUrl,
-    this.isSelected = false,
     this.isSoundOn = false,
     required this.onTap,
   });
@@ -427,7 +425,7 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
   Widget build(BuildContext context) {
     if (_initialized) {
       return GestureDetector(
-        onTap: widget.onTap,
+        onTap: widget.onTap, // Hidden Button area across entire video card!
         behavior: HitTestBehavior.opaque,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
@@ -440,29 +438,25 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
                 ),
               ),
 
-              // Unmute Button appears ONLY on the clicked reel card!
-              if (widget.isSelected)
+              // Sound Status Badge when this reel is active
+              if (widget.isSoundOn)
                 Positioned(
                   bottom: 12,
                   right: 12,
                   child: Material(
-                    color: widget.isSoundOn ? const Color(0xFFC5A059) : Colors.black.withAlpha(200),
+                    color: const Color(0xFFC5A059),
                     borderRadius: BorderRadius.circular(20),
                     elevation: 6,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            widget.isSoundOn ? Icons.volume_up : Icons.volume_off,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 6),
+                          Icon(Icons.volume_up, color: Colors.white, size: 18),
+                          SizedBox(width: 6),
                           Text(
-                            widget.isSoundOn ? '🔊 Sound ON (Tap to Mute & Resume)' : '🔇 Tap to Unmute Sound',
-                            style: const TextStyle(
+                            '🔊 Playing with Sound (Tap to Mute & Resume)',
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -1390,7 +1384,6 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
   late ScrollController _scrollController;
   bool _isAutoScrolling = true;
   int? _selectedReelIndex; // Track clicked reel card index
-  bool _isSoundOnForSelected = false;
 
   final List<Map<String, String>> _reels = const [
     {
@@ -1472,18 +1465,14 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
   void _onReelTapped(int index) {
     setState(() {
       if (_selectedReelIndex == index) {
-        // Tapping the currently active reel toggles its sound or mutes and resumes!
-        _isSoundOnForSelected = !_isSoundOnForSelected;
-        if (!_isSoundOnForSelected) {
-          _selectedReelIndex = null;
-          _isAutoScrolling = true;
-          _animateScroll();
-        }
+        // Tapping the active playing reel again -> Mute it and resume scrolling!
+        _selectedReelIndex = null;
+        _isAutoScrolling = true;
+        _animateScroll();
       } else {
-        // Tapping a new reel card -> Select it, pause scrolling, show Unmute button ON THIS CARD ONLY!
+        // Tapping ANY reel card -> Stop scrolling, play sound IMMEDIATELY for this video!
         _selectedReelIndex = index;
-        _isSoundOnForSelected = false; // Initially muted with Unmute button
-        _isAutoScrolling = false; // Pause scrolling
+        _isAutoScrolling = false; // Stop right-to-left scrolling!
       }
     });
   }
@@ -1505,8 +1494,7 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
         itemCount: _reels.length * 50,
         itemBuilder: (context, index) {
           final reel = _reels[index % _reels.length];
-          final isSelected = _selectedReelIndex == index;
-          final isSoundOn = isSelected && _isSoundOnForSelected;
+          final isThisReelSoundOn = _selectedReelIndex == index;
 
           return Container(
             width: 280,
@@ -1530,8 +1518,7 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
                   Expanded(
                     child: AutoPlayVideoWidget(
                       videoUrl: reel['url']!,
-                      isSelected: isSelected,
-                      isSoundOn: isSoundOn,
+                      isSoundOn: isThisReelSoundOn,
                       onTap: () => _onReelTapped(index),
                     ),
                   ),
