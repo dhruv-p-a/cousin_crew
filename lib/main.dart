@@ -39,6 +39,80 @@ class GalleryDataStore extends ChangeNotifier {
   }
 
   final List<GalleryItemModel> _items = [
+    // 9 Deco Videos from local assets/videos/
+    GalleryItemModel(
+      id: 'dv1',
+      title: 'Royal Wedding Entrance Decor Highlight',
+      category: 'WEDDINGS',
+      description: 'Live video highlight of royal entrance arch with floral pillars and warm ambient lighting.',
+      imageUrl: 'assets/videos/deco_video (1).MP4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv2',
+      title: 'Luxury Mandap Setup Reel',
+      category: 'STAGE DECOR',
+      description: 'Cinematic mandap stage setup with crystal chandeliers and traditional brass lamps.',
+      imageUrl: 'assets/videos/deco_video (2).MP4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv3',
+      title: 'Sangeet Stage Pyro Special',
+      category: 'STAGE DECOR',
+      description: 'Concert sound and pyrotechnic cold pyro show for Sangeet couple entry.',
+      imageUrl: 'assets/videos/deco_video (3).MP4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv4',
+      title: 'Vibrant Haldi Flower Shower Reel',
+      category: 'HALDI / MEHNDI',
+      description: 'Marigold sunflower photo booth with live flower shower entry for Haldi function.',
+      imageUrl: 'assets/videos/deco_video (4).MP4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv5',
+      title: 'Royal Birthday Cake Throne Entry',
+      category: 'BIRTHDAY',
+      description: 'Custom balloon kingdom arch with customized cake throne and LED signage.',
+      imageUrl: 'assets/videos/deco_video (5).MP4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv6',
+      title: 'Crystal Chandelier Stage Reel',
+      category: 'STAGE DECOR',
+      description: 'Luxury indoor stage with customized monogram floor and warm mood lighting.',
+      imageUrl: 'assets/videos/deco_video (6).MP4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv7',
+      title: 'Couple Grand Entry Fireworks',
+      category: 'WEDDINGS',
+      description: 'Dramatic couple entry walk with smoke fountains and cold sparklers.',
+      imageUrl: 'assets/videos/deco_video (7).MP4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv8',
+      title: 'Theme Reception Setup Highlights',
+      category: 'WEDDINGS',
+      description: 'Bespoke reception stage decor with royal silver couches and floral ceiling drapery.',
+      imageUrl: 'assets/videos/deco_video (8).MP4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv9',
+      title: 'Silver Anniversary Gala Reel',
+      category: 'ANNIVERSARY',
+      description: 'Vintage 25th anniversary candlelit stage setup with customized couple initials.',
+      imageUrl: 'assets/videos/deco_video (9).MP4',
+      isVideo: true,
+    ),
+
     // 22 Birthday Photos from local assets/images/
     GalleryItemModel(
       id: 'b1',
@@ -194,53 +268,6 @@ class GalleryDataStore extends ChangeNotifier {
       description: 'Royal welcome archway with personalized welcome sign and red carpet walkway.',
       imageUrl: 'assets/images/birthday photo  (22).jpeg',
     ),
-
-    // Sample Auto-Playing Video Reel Item
-    GalleryItemModel(
-      id: 'v1',
-      title: 'Royal Wedding Entry Highlights',
-      category: 'WEDDINGS',
-      description: 'Cinematic grand couple entry with cold pyros and smoke fountain effects.',
-      imageUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-      isVideo: true,
-    ),
-
-    // Anniversary & Wedding Samples
-    GalleryItemModel(
-      id: 'a1',
-      title: 'Silver 25th Anniversary Gala',
-      category: 'ANNIVERSARY',
-      description: 'Elegantly lit crystal chandelier stage setup with personalized couple monogram & vintage floral pillars.',
-      imageUrl: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1000&q=80',
-    ),
-    GalleryItemModel(
-      id: 'w1',
-      title: 'Royal Mandap Setup',
-      category: 'WEDDINGS',
-      description: 'Grand floral mandap decor with traditional brass lamps and pastel rose drapery.',
-      imageUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1000&q=80',
-    ),
-    GalleryItemModel(
-      id: 'h1',
-      title: 'Vibrant Haldi Ceremony',
-      category: 'HALDI / MEHNDI',
-      description: 'Bright marigold sunflower backdrop with interactive photo booth and traditional seating.',
-      imageUrl: 'https://images.unsplash.com/photo-1561501900-3701fa6a0864?auto=format&fit=crop&w=1000&q=80',
-    ),
-    GalleryItemModel(
-      id: 's1',
-      title: 'Cinematic Stage Lighting',
-      category: 'STAGE DECOR',
-      description: 'Crystal chandelier stage with customized monogram floor and warm mood lighting.',
-      imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=80',
-    ),
-    GalleryItemModel(
-      id: 'c1',
-      title: 'Gourmet Catering Display',
-      category: 'CATERING',
-      description: 'Live station catering counters with artisan presentation and royal silver service.',
-      imageUrl: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1000&q=80',
-    ),
   ];
 
   List<GalleryItemModel> get items => List.unmodifiable(_items);
@@ -256,7 +283,7 @@ class GalleryDataStore extends ChangeNotifier {
           'imageUrl': item.imageUrl,
           'isVideo': item.isVideo,
         }).toList();
-        html.window.localStorage['cousin_crew_gallery_v2'] = jsonEncode(jsonList);
+        html.window.localStorage['cousin_crew_gallery_v3'] = jsonEncode(jsonList);
       } catch (e) {
         print("Storage save error: $e");
       }
@@ -266,7 +293,7 @@ class GalleryDataStore extends ChangeNotifier {
   void _loadFromStorage() {
     if (kIsWeb) {
       try {
-        final savedJson = html.window.localStorage['cousin_crew_gallery_v2'];
+        final savedJson = html.window.localStorage['cousin_crew_gallery_v3'];
         if (savedJson != null && savedJson.isNotEmpty) {
           final List<dynamic> decoded = jsonDecode(savedJson);
           if (decoded.isNotEmpty) {
@@ -311,7 +338,7 @@ class GalleryDataStore extends ChangeNotifier {
   }
 }
 
-// Auto-Playing Video Player Widget (Looped & Muted for Smooth Playback)
+// Auto-Playing Video Player Widget with Sound Mute / Unmute Toggle Button
 class AutoPlayVideoWidget extends StatefulWidget {
   final String videoUrl;
   const AutoPlayVideoWidget({super.key, required this.videoUrl});
@@ -323,6 +350,7 @@ class AutoPlayVideoWidget extends StatefulWidget {
 class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
   late VideoPlayerController _controller;
   bool _initialized = false;
+  bool _isMuted = true; // Muted by default for browser autoplay compliance
 
   @override
   void initState() {
@@ -339,11 +367,18 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
       if (mounted) {
         setState(() => _initialized = true);
         _controller.setLooping(true);
-        _controller.setVolume(0.0); // Muted for autoplay compliance
+        _controller.setVolume(0.0); // Default Muted
         _controller.play();
       }
     }).catchError((err) {
       print("Video error: $err");
+    });
+  }
+
+  void _toggleSound() {
+    setState(() {
+      _isMuted = !_isMuted;
+      _controller.setVolume(_isMuted ? 0.0 : 1.0);
     });
   }
 
@@ -358,9 +393,46 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
     if (_initialized) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: VideoPlayer(_controller),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              ),
+            ),
+            // Sound Mute / Unmute Toggle Button
+            Positioned(
+              bottom: 10,
+              right: 10,
+              child: Material(
+                color: Colors.black.withAlpha(160),
+                borderRadius: BorderRadius.circular(20),
+                child: InkWell(
+                  onTap: _toggleSound,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _isMuted ? Icons.volume_off : Icons.volume_up,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _isMuted ? 'Muted' : 'Sound ON',
+                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -490,40 +562,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               SliverAppBar(
                 floating: true,
                 pinned: true,
-                backgroundColor: Colors.white.withAlpha(245),
-                elevation: 3,
-                shadowColor: Colors.black.withAlpha(20),
+                backgroundColor: const Color(0xFFFAF9F5),
+                elevation: 1,
+                shadowColor: Colors.black.withAlpha(15),
                 toolbarHeight: 90,
                 title: InkWell(
                   onTap: () => _scrollToSection(0),
                   borderRadius: BorderRadius.circular(8),
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/images/logo.png',
-                          height: 65,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'COUSIN CREWS',
-                                style: GoogleFonts.playfairDisplay(
-                                  color: primaryColor,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 26,
-                                  letterSpacing: 3,
-                                ),
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        height: 70,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'COUSIN CREWS',
+                              style: GoogleFonts.playfairDisplay(
+                                color: primaryColor,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 26,
+                                letterSpacing: 3,
                               ),
-                              const SizedBox(height: 2),
-                              _ShimmerGoldLine(color: secondaryColor),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 2),
+                            _ShimmerGoldLine(color: secondaryColor),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -1266,7 +1336,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-// Auto-scrolling Video Reels Strip Widget (Right to Left Continuous Movement)
+// Auto-scrolling Video Reels Strip Widget with 9 Deco Videos & Sound Toggle
 class _AutoScrollingVideoReelsStrip extends StatefulWidget {
   const _AutoScrollingVideoReelsStrip();
 
@@ -1279,24 +1349,40 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
 
   final List<Map<String, String>> _reels = const [
     {
-      'title': 'Grand Bride & Groom Entry',
-      'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+      'title': 'Royal Wedding Entrance Decor',
+      'url': 'assets/videos/deco_video (1).MP4',
     },
     {
-      'title': 'Royal Mandap Garland Exchange',
-      'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+      'title': 'Luxury Floral Mandap Highlights',
+      'url': 'assets/videos/deco_video (2).MP4',
     },
     {
       'title': 'Sangeet Stage Pyro Show',
-      'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+      'url': 'assets/videos/deco_video (3).MP4',
     },
     {
       'title': 'Vibrant Haldi Flower Shower',
-      'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+      'url': 'assets/videos/deco_video (4).MP4',
     },
     {
-      'title': '1st Birthday Cake Throne Entry',
-      'url': 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+      'title': 'Birthday Cake Throne Celebration',
+      'url': 'assets/videos/deco_video (5).MP4',
+    },
+    {
+      'title': 'Crystal Chandelier Stage Lighting',
+      'url': 'assets/videos/deco_video (6).MP4',
+    },
+    {
+      'title': 'Royal Couple Entry Fireworks',
+      'url': 'assets/videos/deco_video (7).MP4',
+    },
+    {
+      'title': 'Theme Wedding Reception Setup',
+      'url': 'assets/videos/deco_video (8).MP4',
+    },
+    {
+      'title': 'Grand Anniversary Gala Highlights',
+      'url': 'assets/videos/deco_video (9).MP4',
     },
   ];
 
@@ -1826,9 +1912,9 @@ class _AdminPageState extends State<AdminPage> {
           final reader = html.FileReader();
           reader.readAsDataUrl(file);
           reader.onLoadEnd.listen((e) {
-            final resultDataUrl = reader.result as String;
+            final resultUrl = reader.result as String;
             setState(() {
-              _urlController.text = resultDataUrl; // Permanent Base64 Data URL!
+              _urlController.text = resultUrl; // Permanent Base64 Data URL!
             });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Selected & Saved File: ${file.name}')),
