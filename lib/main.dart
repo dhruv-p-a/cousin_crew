@@ -338,17 +338,13 @@ class GalleryDataStore extends ChangeNotifier {
   }
 }
 
-// Auto-Playing Video Player Widget with Strict Single-Video Sound Controls
+// Clean Auto-Playing Video Player Widget
 class AutoPlayVideoWidget extends StatefulWidget {
   final String videoUrl;
-  final bool isSoundOn;
-  final VoidCallback onTapToggleSound;
 
   const AutoPlayVideoWidget({
     super.key,
     required this.videoUrl,
-    required this.isSoundOn,
-    required this.onTapToggleSound,
   });
 
   @override
@@ -365,20 +361,6 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
     _initVideo();
   }
 
-  @override
-  void didUpdateWidget(AutoPlayVideoWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isSoundOn != oldWidget.isSoundOn && _initialized) {
-      if (widget.isSoundOn) {
-        _controller.seekTo(Duration.zero);
-        _controller.setVolume(1.0);
-        _controller.play();
-      } else {
-        _controller.setVolume(0.0);
-      }
-    }
-  }
-
   void _initVideo() {
     if (widget.videoUrl.startsWith('http') ||
         widget.videoUrl.startsWith('blob:') ||
@@ -392,7 +374,7 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
       if (mounted) {
         setState(() => _initialized = true);
         _controller.setLooping(true);
-        _controller.setVolume(widget.isSoundOn ? 1.0 : 0.0);
+        _controller.setVolume(0.0);
         _controller.play();
       }
     }).catchError((err) {
@@ -405,7 +387,7 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
           if (mounted) {
             setState(() => _initialized = true);
             _controller.setLooping(true);
-            _controller.setVolume(widget.isSoundOn ? 1.0 : 0.0);
+            _controller.setVolume(0.0);
             _controller.play();
           }
         });
@@ -422,52 +404,11 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
   @override
   Widget build(BuildContext context) {
     if (_initialized) {
-      return GestureDetector(
-        onTap: widget.onTapToggleSound,
-        behavior: HitTestBehavior.opaque,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: AspectRatio(
-                  aspectRatio: _controller.value.aspectRatio,
-                  child: VideoPlayer(_controller),
-                ),
-              ),
-              Positioned(
-                bottom: 10,
-                right: 10,
-                child: Material(
-                  color: widget.isSoundOn ? const Color(0xFFC5A059) : Colors.black.withAlpha(180),
-                  borderRadius: BorderRadius.circular(20),
-                  elevation: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          widget.isSoundOn ? Icons.volume_up : Icons.volume_off,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          widget.isSoundOn ? '🔊 Sound ON (Tap to Mute)' : '🔇 Tap for Sound',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AspectRatio(
+          aspectRatio: _controller.value.aspectRatio,
+          child: VideoPlayer(_controller),
         ),
       );
     }
@@ -1371,7 +1312,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-// Auto-scrolling Video Reels Strip Widget with Single Active Video Sound Control
+// Clean Auto-scrolling Video Reels Strip Widget
 class _AutoScrollingVideoReelsStrip extends StatefulWidget {
   const _AutoScrollingVideoReelsStrip();
 
@@ -1381,8 +1322,6 @@ class _AutoScrollingVideoReelsStrip extends StatefulWidget {
 
 class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsStrip> {
   late ScrollController _scrollController;
-  bool _isAutoScrolling = true;
-  int? _activeSoundIndex; // Strictly ONLY 1 index has sound ON at any time!
 
   final List<Map<String, String>> _reels = const [
     {
@@ -1435,14 +1374,14 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
 
   void _startAutoScroll() {
     Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted && _scrollController.hasClients && _isAutoScrolling) {
+      if (mounted && _scrollController.hasClients) {
         _animateScroll();
       }
     });
   }
 
   void _animateScroll() {
-    if (!mounted || !_scrollController.hasClients || !_isAutoScrolling) return;
+    if (!mounted || !_scrollController.hasClients) return;
     double maxScroll = _scrollController.position.maxScrollExtent;
     double currentScroll = _scrollController.offset;
     if (currentScroll >= maxScroll - 10) {
@@ -1455,32 +1394,9 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
           curve: Curves.linear,
         )
         .then((_) {
-      if (mounted && _isAutoScrolling) {
+      if (mounted) {
         _animateScroll();
       }
-    });
-  }
-
-  void _toggleSoundForIndex(int index) {
-    setState(() {
-      if (_activeSoundIndex == index) {
-        // Mute this video and resume scrolling!
-        _activeSoundIndex = null;
-        _isAutoScrolling = true;
-        _animateScroll();
-      } else {
-        // Turn sound ON strictly ONLY for this video, mute all others, pause scrolling!
-        _activeSoundIndex = index;
-        _isAutoScrolling = false;
-      }
-    });
-  }
-
-  void _muteAllAndResume() {
-    setState(() {
-      _activeSoundIndex = null;
-      _isAutoScrolling = true;
-      _animateScroll();
     });
   }
 
@@ -1492,141 +1408,59 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Prominent Common Audio Mute/Notice Button
-        Padding(
-          padding: const EdgeInsets.only(bottom: 25),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: _activeSoundIndex != null
-                ? ElevatedButton.icon(
-                    key: const ValueKey('mute_btn'),
-                    onPressed: _muteAllAndResume,
-                    icon: const Icon(Icons.volume_off, color: Colors.white, size: 22),
-                    label: Text(
-                      '🔇 MUTE REEL SOUND & RESUME SCROLLING',
-                      style: GoogleFonts.montserrat(
+    return SizedBox(
+      height: 380,
+      child: ListView.builder(
+        controller: _scrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: _reels.length * 50,
+        itemBuilder: (context, index) {
+          final reel = _reels[index % _reels.length];
+
+          return Container(
+            width: 280,
+            margin: const EdgeInsets.symmetric(horizontal: 15),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(20),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                )
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: AutoPlayVideoWidget(
+                      videoUrl: reel['url']!,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      reel['title']!,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                        fontSize: 13,
+                        color: const Color(0xFF0A192F),
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC5A059),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 20),
-                      elevation: 6,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                    ),
-                  )
-                : Container(
-                    key: const ValueKey('tip_badge'),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0A192F),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: const Color(0xFFC5A059).withAlpha(150)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.volume_up, color: Color(0xFFC5A059), size: 18),
-                        const SizedBox(width: 10),
-                        Text(
-                          'TAP ANY REEL BELOW TO PLAY ITS SOUND',
-                          style: GoogleFonts.montserrat(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-          ),
-        ),
-
-        SizedBox(
-          height: 380,
-          child: ListView.builder(
-            controller: _scrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: _reels.length * 50,
-            itemBuilder: (context, index) {
-              final reel = _reels[index % _reels.length];
-              final isThisReelSoundOn = _activeSoundIndex == index;
-
-              return Container(
-                width: 280,
-                margin: const EdgeInsets.symmetric(horizontal: 15),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(20),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    )
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            Positioned.fill(
-                              child: AutoPlayVideoWidget(
-                                videoUrl: reel['url']!,
-                                isSoundOn: isThisReelSoundOn,
-                                onTapToggleSound: () => _toggleSoundForIndex(index),
-                              ),
-                            ),
-                            Positioned(
-                              top: 12,
-                              right: 12,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFC5A059),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: const Text(
-                                  'LIVE REEL',
-                                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          reel['title']!,
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF0A192F),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -1807,8 +1641,6 @@ class _GalleryPageState extends State<GalleryPage> {
                 child: item.isVideo
                     ? AutoPlayVideoWidget(
                         videoUrl: item.imageUrl,
-                        isSoundOn: true,
-                        onTapToggleSound: () {},
                       )
                     : item.imageUrl.startsWith('http') ||
                             item.imageUrl.startsWith('blob:') ||
@@ -1920,8 +1752,6 @@ class _GalleryPhotoCardState extends State<_GalleryPhotoCard> {
                           child: widget.item.isVideo
                               ? AutoPlayVideoWidget(
                                   videoUrl: widget.item.imageUrl,
-                                  isSoundOn: false,
-                                  onTapToggleSound: () {},
                                 )
                               : widget.item.imageUrl.startsWith('http') ||
                                       widget.item.imageUrl.startsWith('blob:') ||
