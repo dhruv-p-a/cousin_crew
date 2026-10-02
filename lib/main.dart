@@ -338,10 +338,18 @@ class GalleryDataStore extends ChangeNotifier {
   }
 }
 
-// Auto-Playing Video Player Widget with Sound Mute / Unmute Toggle Button
+// Auto-Playing Video Player Widget with Interactive Sound Unmute & Restart Controls
 class AutoPlayVideoWidget extends StatefulWidget {
   final String videoUrl;
-  const AutoPlayVideoWidget({super.key, required this.videoUrl});
+  final VoidCallback? onTapPlayWithSound;
+  final VoidCallback? onTapMuteAndResumeScroll;
+
+  const AutoPlayVideoWidget({
+    super.key,
+    required this.videoUrl,
+    this.onTapPlayWithSound,
+    this.onTapMuteAndResumeScroll,
+  });
 
   @override
   State<AutoPlayVideoWidget> createState() => _AutoPlayVideoWidgetState();
@@ -350,7 +358,7 @@ class AutoPlayVideoWidget extends StatefulWidget {
 class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
   late VideoPlayerController _controller;
   bool _initialized = false;
-  bool _isMuted = true;
+  bool _isSoundOn = false;
 
   @override
   void initState() {
@@ -371,12 +379,11 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
       if (mounted) {
         setState(() => _initialized = true);
         _controller.setLooping(true);
-        _controller.setVolume(0.0);
+        _controller.setVolume(0.0); // Muted by default for browser autoplay policy
         _controller.play();
       }
     }).catchError((err) {
       print("Video error on ${widget.videoUrl}: $err");
-      // Fallback sample online video if local asset fails to load
       if (!widget.videoUrl.startsWith('http')) {
         _controller = VideoPlayerController.networkUrl(
           Uri.parse('https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'),
@@ -393,10 +400,18 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
     });
   }
 
-  void _toggleSound() {
+  void _handleTapToggle() {
     setState(() {
-      _isMuted = !_isMuted;
-      _controller.setVolume(_isMuted ? 0.0 : 1.0);
+      _isSoundOn = !_isSoundOn;
+      if (_isSoundOn) {
+        _controller.seekTo(Duration.zero); // Restart video from the beginning (0s)
+        _controller.setVolume(1.0); // Turn sound ON
+        _controller.play();
+        widget.onTapPlayWithSound?.call(); // Stop horizontal auto-scrolling
+      } else {
+        _controller.setVolume(0.0); // Mute sound
+        widget.onTapMuteAndResumeScroll?.call(); // Resume horizontal auto-scrolling
+      }
     });
   }
 
@@ -409,24 +424,23 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
   @override
   Widget build(BuildContext context) {
     if (_initialized) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
+      return GestureDetector(
+        onTap: _handleTapToggle,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: AspectRatio(
+                  aspectRatio: _controller.value.aspectRatio,
+                  child: VideoPlayer(_controller),
+                ),
               ),
-            ),
-            Positioned(
-              bottom: 10,
-              right: 10,
-              child: Material(
-                color: Colors.black.withAlpha(160),
-                borderRadius: BorderRadius.circular(20),
-                child: InkWell(
-                  onTap: _toggleSound,
+              Positioned(
+                bottom: 10,
+                right: 10,
+                child: Material(
+                  color: _isSoundOn ? const Color(0xFFC5A059) : Colors.black.withAlpha(160),
                   borderRadius: BorderRadius.circular(20),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -434,13 +448,13 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          _isMuted ? Icons.volume_off : Icons.volume_up,
+                          _isSoundOn ? Icons.volume_up : Icons.volume_off,
                           color: Colors.white,
                           size: 16,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          _isMuted ? 'Muted' : 'Sound ON',
+                          _isSoundOn ? 'Playing with Sound' : 'Tap for Sound',
                           style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -448,8 +462,8 @@ class _AutoPlayVideoWidgetState extends State<AutoPlayVideoWidget> {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -1353,7 +1367,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-// Auto-scrolling Video Reels Strip Widget with 9 Deco Videos & Sound Toggle
+// Auto-scrolling Video Reels Strip Widget with Interactive Tap & Sound Controls
 class _AutoScrollingVideoReelsStrip extends StatefulWidget {
   const _AutoScrollingVideoReelsStrip();
 
@@ -1363,6 +1377,7 @@ class _AutoScrollingVideoReelsStrip extends StatefulWidget {
 
 class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsStrip> {
   late ScrollController _scrollController;
+  bool _isAutoScrolling = true;
 
   final List<Map<String, String>> _reels = const [
     {
@@ -1415,14 +1430,14 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
 
   void _startAutoScroll() {
     Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted && _scrollController.hasClients) {
+      if (mounted && _scrollController.hasClients && _isAutoScrolling) {
         _animateScroll();
       }
     });
   }
 
   void _animateScroll() {
-    if (!mounted || !_scrollController.hasClients) return;
+    if (!mounted || !_scrollController.hasClients || !_isAutoScrolling) return;
     double maxScroll = _scrollController.position.maxScrollExtent;
     double currentScroll = _scrollController.offset;
     if (currentScroll >= maxScroll - 10) {
@@ -1435,10 +1450,19 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
           curve: Curves.linear,
         )
         .then((_) {
-      if (mounted) {
+      if (mounted && _isAutoScrolling) {
         _animateScroll();
       }
     });
+  }
+
+  void _pauseAutoScroll() {
+    setState(() => _isAutoScrolling = false);
+  }
+
+  void _resumeAutoScroll() {
+    setState(() => _isAutoScrolling = true);
+    _animateScroll();
   }
 
   @override
@@ -1481,7 +1505,11 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
                     child: Stack(
                       children: [
                         Positioned.fill(
-                          child: AutoPlayVideoWidget(videoUrl: reel['url']!),
+                          child: AutoPlayVideoWidget(
+                            videoUrl: reel['url']!,
+                            onTapPlayWithSound: _pauseAutoScroll,
+                            onTapMuteAndResumeScroll: _resumeAutoScroll,
+                          ),
                         ),
                         Positioned(
                           top: 12,
