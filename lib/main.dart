@@ -39,7 +39,7 @@ class GalleryDataStore extends ChangeNotifier {
   }
 
   final List<GalleryItemModel> _items = [
-    // 9 Deco Videos from local assets/videos/
+    // 13 Deco & Haldi Videos from local assets/videos/
     GalleryItemModel(
       id: 'dv1',
       title: 'Royal Wedding Entrance Decor Highlight',
@@ -111,6 +111,259 @@ class GalleryDataStore extends ChangeNotifier {
       description: 'Vintage 25th anniversary candlelit stage setup with customized couple initials.',
       imageUrl: 'assets/videos/deco9.mp4',
       isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv10',
+      title: 'Grand Haldi Floral Mandap Reel',
+      category: 'HALDI / MEHNDI',
+      description: 'Bright yellow & orange marigold flower shower mandap for traditional Gujarati Haldi.',
+      imageUrl: 'assets/videos/deco10.mp4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv11',
+      title: 'Luxury Reception Entry Walkway',
+      category: 'WEDDINGS',
+      description: 'Golden fairy light tunnel entrance with velvet pathway carpet.',
+      imageUrl: 'assets/videos/deco11.mp4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv12',
+      title: 'Bespoke Baby Shower & Cradle Setup',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Floral wooden swing cradle backdrop for royal Godh Bharai ceremony in Gujarat.',
+      imageUrl: 'assets/videos/deco12.mp4',
+      isVideo: true,
+    ),
+    GalleryItemModel(
+      id: 'dv13',
+      title: 'Live Haldi Flower Shower Entry',
+      category: 'HALDI / MEHNDI',
+      description: 'Interactive rose petal & marigold confetti shower for Haldi bride & groom.',
+      imageUrl: 'assets/videos/haldi_video1.mp4',
+      isVideo: true,
+    ),
+
+    // 7 Haldi / Mehndi Photos from assets/images/
+    GalleryItemModel(
+      id: 'h1',
+      title: 'Yellow Marigold Haldi Throne',
+      category: 'HALDI / MEHNDI',
+      description: 'Traditional Gujarati Haldi setup with authentic brass urli, marigold garlands, and sunflower seating.',
+      imageUrl: 'assets/images/haldi1.png',
+    ),
+    GalleryItemModel(
+      id: 'h2',
+      title: 'Royal Brass Urli Flower Bath',
+      category: 'HALDI / MEHNDI',
+      description: 'Grand sunflower archway with custom couple name signage for Haldi function in Ahmedabad.',
+      imageUrl: 'assets/images/haldi2.png',
+    ),
+    GalleryItemModel(
+      id: 'h3',
+      title: 'Bespoke Floral Mehndi Canopy',
+      category: 'HALDI / MEHNDI',
+      description: 'Vibrant multicolor drapery with hanging tassels and genda phool jhula.',
+      imageUrl: 'assets/images/haldi3.png',
+    ),
+    GalleryItemModel(
+      id: 'h4',
+      title: 'Sunflower Photo Booth Corner',
+      category: 'HALDI / MEHNDI',
+      description: 'Interactive photobooth with customized wooden props and traditional folk umbrellas.',
+      imageUrl: 'assets/images/haldi4.png',
+    ),
+    GalleryItemModel(
+      id: 'h5',
+      title: 'Traditional Gujarati Haldi Setup',
+      category: 'HALDI / MEHNDI',
+      description: 'Authentic village theme decor with kalash, bandhani drapes, and fresh floral carpets.',
+      imageUrl: 'assets/images/haldi5.png',
+    ),
+    GalleryItemModel(
+      id: 'h6',
+      title: 'Pastel Yellow Jhula Ceremony',
+      category: 'HALDI / MEHNDI',
+      description: 'Custom jhula seating decorated with white jasmine & yellow marigold strings.',
+      imageUrl: 'assets/images/haldi6.png',
+    ),
+    GalleryItemModel(
+      id: 'h7',
+      title: 'Mehndi Bride Throne Decor',
+      category: 'HALDI / MEHNDI',
+      description: 'Elegantly styled Mehndi throne with cushioned seating and ambient festoon lights.',
+      imageUrl: 'assets/images/haldi7.png',
+    ),
+
+    // 24 Baby Shower / Godh Bharai Photos from assets/images/
+    GalleryItemModel(
+      id: 'bs1',
+      title: 'Royal Floral Swing Baby Shower Arch',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Grand Godh Bharai Jhula decor with pastel roses and personalized mom-to-be throne.',
+      imageUrl: 'assets/images/baby_shower1.png',
+    ),
+    GalleryItemModel(
+      id: 'bs2',
+      title: 'Pink & Blue Cloud Castle Theme',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Customized balloon cloud backdrop with glowing LED moon and star props.',
+      imageUrl: 'assets/images/baby_shower2.png',
+    ),
+    GalleryItemModel(
+      id: 'bs3',
+      title: 'Pastel Balloon Kingdom Setup',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Elegantly styled dessert table with teddy bear cutouts and customized cake display.',
+      imageUrl: 'assets/images/baby_shower3.png',
+    ),
+    GalleryItemModel(
+      id: 'bs4',
+      title: 'Traditional Gujarati Srimant Ceremony',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Authentic royal brass lamps and marigold jhula for traditional Godh Bharai.',
+      imageUrl: 'assets/images/baby_shower4.png',
+    ),
+    GalleryItemModel(
+      id: 'bs5',
+      title: 'Golden Crown Baby Shower Setup',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Luxury white and gold theme with custom crown backdrop and soft mood lighting.',
+      imageUrl: 'assets/images/baby_shower5.png',
+    ),
+    GalleryItemModel(
+      id: 'bs6',
+      title: 'Teddy Bear Cloud Dreamland',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Soft beige and white teddy bear setup with customized welcome board.',
+      imageUrl: 'assets/images/baby_shower6.png',
+    ),
+    GalleryItemModel(
+      id: 'bs7',
+      title: 'Fairy Tale Stork Arch Decor',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Enchanted floral archway with 3D stork cutouts and fairy light drapery.',
+      imageUrl: 'assets/images/baby_shower7.png',
+    ),
+    GalleryItemModel(
+      id: 'bs8',
+      title: 'Boho Pampas Grass Baby Shower',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Modern chic boho theme with nude balloon garland and wooden dessert stands.',
+      imageUrl: 'assets/images/baby_shower8.png',
+    ),
+    GalleryItemModel(
+      id: 'bs9',
+      title: 'Royal Velvet Mom-To-Be Throne',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Bespoke velvet couch with floral frame for memorable family photography.',
+      imageUrl: 'assets/images/baby_shower9.png',
+    ),
+    GalleryItemModel(
+      id: 'bs10',
+      title: 'Pastel Rainbow Baby Shower',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Soft pastel rainbow balloon arch with personalized LED name signage.',
+      imageUrl: 'assets/images/baby_shower10.png',
+    ),
+    GalleryItemModel(
+      id: 'bs11',
+      title: 'Celestial Starry Night Srimant',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Midnight blue backdrop with glowing moon jhula and fairy lights.',
+      imageUrl: 'assets/images/baby_shower11.png',
+    ),
+    GalleryItemModel(
+      id: 'bs12',
+      title: 'Botanical Garden Baby Shower',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Fresh greenery and white orchid foliage backdrop with rustic wooden seating.',
+      imageUrl: 'assets/images/baby_shower12.png',
+    ),
+    GalleryItemModel(
+      id: 'bs13',
+      title: 'Cute Elephant Theme Setup',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Playful baby elephant backdrop with yellow and blue balloon pillars.',
+      imageUrl: 'assets/images/baby_shower13.png',
+    ),
+    GalleryItemModel(
+      id: 'bs14',
+      title: 'Vintage Floral Jhula Ceremony',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Rose petal carpet with traditional wooden swing for Gujarati Srimant.',
+      imageUrl: 'assets/images/baby_shower14.png',
+    ),
+    GalleryItemModel(
+      id: 'bs15',
+      title: 'Luxury Gold & White Balloon Kingdom',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Metallic gold accents with crystal chandeliers for opulent hotel hall venue.',
+      imageUrl: 'assets/images/baby_shower15.png',
+    ),
+    GalleryItemModel(
+      id: 'bs16',
+      title: 'Peach & Cream Floral Canopy',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Elegant peach roses and jasmine drapes surrounding the mother throne.',
+      imageUrl: 'assets/images/baby_shower16.png',
+    ),
+    GalleryItemModel(
+      id: 'bs17',
+      title: 'Hot Air Balloon Baby Shower',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: '3D hot air balloon basket photobooth with fluffy cloud balloons.',
+      imageUrl: 'assets/images/baby_shower17.png',
+    ),
+    GalleryItemModel(
+      id: 'bs18',
+      title: 'Modern Minimalist White Setup',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'All-white floral backdrop with warm neon signage for boutique celebrations.',
+      imageUrl: 'assets/images/baby_shower18.png',
+    ),
+    GalleryItemModel(
+      id: 'bs19',
+      title: 'Sunshine Sunflower Godh Bharai',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Bright sunflower strings with traditional brass urli for auspicious function.',
+      imageUrl: 'assets/images/baby_shower19.png',
+    ),
+    GalleryItemModel(
+      id: 'bs20',
+      title: 'Royal Prince / Princess Theme',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Crown throne backdrop with customized welcome easel and dessert table.',
+      imageUrl: 'assets/images/baby_shower20.png',
+    ),
+    GalleryItemModel(
+      id: 'bs21',
+      title: 'Lavender Dream Baby Shower',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Lush lavender and lilac floral archway with mirror photobooth.',
+      imageUrl: 'assets/images/baby_shower21.png',
+    ),
+    GalleryItemModel(
+      id: 'bs22',
+      title: 'Jungle Safari Baby Shower',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Greenery foliage backdrop with cute lion and zebra props.',
+      imageUrl: 'assets/images/baby_shower22.png',
+    ),
+    GalleryItemModel(
+      id: 'bs23',
+      title: 'Shimmering Silver Srimant Stage',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Metallic silver sequin backdrop with LED spotlights and cake throne.',
+      imageUrl: 'assets/images/baby_shower23.png',
+    ),
+    GalleryItemModel(
+      id: 'bs24',
+      title: 'Grand Welcome Entrance Arch',
+      category: 'BABY SHOWER / GODH BHARAI',
+      description: 'Floral tunnel welcome archway with personalized welcome sign.',
+      imageUrl: 'assets/images/baby_shower24.png',
     ),
 
     // 22 Birthday Photos from local assets/images/
@@ -283,7 +536,7 @@ class GalleryDataStore extends ChangeNotifier {
           'imageUrl': item.imageUrl,
           'isVideo': item.isVideo,
         }).toList();
-        html.window.localStorage['cousin_crew_gallery_v3'] = jsonEncode(jsonList);
+        html.window.localStorage['cousin_crew_gallery_v4'] = jsonEncode(jsonList);
       } catch (e) {
         print("Storage save error: $e");
       }
@@ -293,7 +546,7 @@ class GalleryDataStore extends ChangeNotifier {
   void _loadFromStorage() {
     if (kIsWeb) {
       try {
-        final savedJson = html.window.localStorage['cousin_crew_gallery_v3'];
+        final savedJson = html.window.localStorage['cousin_crew_gallery_v4'];
         if (savedJson != null && savedJson.isNotEmpty) {
           final List<dynamic> decoded = jsonDecode(savedJson);
           if (decoded.isNotEmpty) {
@@ -882,7 +1135,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 Container(height: 3, width: 70, color: secondaryColor),
                 const SizedBox(height: 15),
                 Text(
-                  'Weddings, Birthday Celebrations, Anniversaries & Corporate Galas',
+                  'Weddings, Birthday Celebrations, Anniversaries, Haldi & Baby Showers',
                   style: GoogleFonts.montserrat(color: Colors.grey[600], fontSize: 15),
                 ),
               ],
@@ -910,16 +1163,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
           _InteractiveProjectCard(
             isDesktop: isDesktop,
-            title: 'Birthday & Anniversary Specials',
+            title: 'Birthday & Baby Shower Specials',
             subtitle: 'Unforgettable Milestone Celebrations',
             description:
-                'Bespoke balloon arches, customized cake thrones, LED dance floors, and romantic candlelit anniversary galas.',
+                'Bespoke balloon arches, customized cake thrones, Godh Bharai jhula setups, and romantic candlelit anniversary galas.',
             imageUrl:
                 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
             imgLeft: false,
             onDetailsPressed: () => _openDetailsDialog(
               context,
-              'Birthday & Anniversary Specials',
+              'Birthday & Baby Shower Specials',
               'Tailored theme celebrations for all ages! We design balloon decor, photobooths, customized stage lighting, and luxury catering to make your milestone unforgettable.',
               'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
             ),
@@ -968,7 +1221,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 Container(height: 3, width: 70, color: secondaryColor),
                 const SizedBox(height: 15),
                 Text(
-                  'Auto-playing live highlights from our Gujarat weddings & celebrations',
+                  'Auto-playing live highlights from our Gujarat weddings, Haldi, Baby Showers & celebrations',
                   style: GoogleFonts.montserrat(color: Colors.grey[600], fontSize: 15),
                   textAlign: TextAlign.center,
                 ),
@@ -1190,6 +1443,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             'Partial Event Planning',
             'Birthday Party',
             'Anniversary Celebration',
+            'Baby Shower / Godh Bharai',
             'Event Management',
             'Content Creation'
           ].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
@@ -1422,6 +1676,22 @@ class _AutoScrollingVideoReelsStripState extends State<_AutoScrollingVideoReelsS
       'title': 'Grand Anniversary Gala Highlights',
       'url': 'assets/videos/deco9.mp4',
     },
+    {
+      'title': 'Grand Haldi Floral Mandap',
+      'url': 'assets/videos/deco10.mp4',
+    },
+    {
+      'title': 'Luxury Reception Walkway',
+      'url': 'assets/videos/deco11.mp4',
+    },
+    {
+      'title': 'Bespoke Baby Shower Jhula',
+      'url': 'assets/videos/deco12.mp4',
+    },
+    {
+      'title': 'Live Haldi Flower Shower Entry',
+      'url': 'assets/videos/haldi_video1.mp4',
+    },
   ];
 
   @override
@@ -1578,9 +1848,10 @@ class _GalleryPageState extends State<GalleryPage> {
     final List<String> categories = [
       'ALL',
       'BIRTHDAY',
+      'BABY SHOWER / GODH BHARAI',
+      'HALDI / MEHNDI',
       'ANNIVERSARY',
       'WEDDINGS',
-      'HALDI / MEHNDI',
       'STAGE DECOR',
       'CATERING'
     ];
@@ -1629,7 +1900,7 @@ class _GalleryPageState extends State<GalleryPage> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Explore Birthdays, Anniversaries, Weddings & Custom Theme Setups in Gujarat',
+              'Explore Birthdays, Baby Showers, Haldi/Mehndi, Weddings & Theme Setups in Gujarat',
               style: GoogleFonts.montserrat(color: Colors.grey[600], fontSize: 15),
               textAlign: TextAlign.center,
             ),
@@ -2159,9 +2430,10 @@ class _AdminPageState extends State<AdminPage> {
                   decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
                   items: [
                     'BIRTHDAY',
+                    'BABY SHOWER / GODH BHARAI',
+                    'HALDI / MEHNDI',
                     'ANNIVERSARY',
                     'WEDDINGS',
-                    'HALDI / MEHNDI',
                     'STAGE DECOR',
                     'CATERING'
                   ].map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
@@ -2328,9 +2600,10 @@ class _AdminPageState extends State<AdminPage> {
                   decoration: const InputDecoration(labelText: 'Category'),
                   items: [
                     'BIRTHDAY',
+                    'BABY SHOWER / GODH BHARAI',
+                    'HALDI / MEHNDI',
                     'ANNIVERSARY',
                     'WEDDINGS',
-                    'HALDI / MEHNDI',
                     'STAGE DECOR',
                     'CATERING'
                   ].map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
